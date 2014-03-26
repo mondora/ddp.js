@@ -28,11 +28,11 @@
 		this._status = "connecting";
 		this.onConnected = onConnected;
 		this.onFailed    = onFailed;
-		this._socket = new SockJS(this.url);
-		this._socket.onopen    = this._onSocketOpen;
-		this._socket.onmessage = this._onSocketMessage;
-		this._socket.onerror   = this._onSocketError;
-		this._socket.onclose   = this._onSocketClose;
+		this._socket = new SockJS(this._url);
+		this._socket.onopen    = _.bind(this._onSocketOpen, this);
+		this._socket.onmessage = _.bind(this._onSocketMessage, this);
+		this._socket.onerror   = _.bind(this._onSocketError, this);
+		this._socket.onclose   = _.bind(this._onSocketClose, this);
 	};
 
 	DDP.prototype.disconnect = function (onDisconnected) {
@@ -188,7 +188,7 @@
 	/////////////////////////
 
 	DDP.prototype._send = function (object) {
-		this._socket.send(EJSON.stringify(object));
+		this._socket.send(JSON.stringify(object));
 	};
 
 	//////////////////////////
@@ -312,7 +312,10 @@
 	};
 
 	DDP.prototype._onSocketMessage = function (message) {
-		var data = EJSON.parse(message.data);
+		var data = JSON.parse(message.data);
+		if (_.isUndefined(data.msg)) {
+			return;
+		}
 		switch (data.msg) {
 			case "error":
 				this._onError(data);
