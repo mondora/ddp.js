@@ -1,5 +1,11 @@
 (function ($) {
 
+	$.ddpMessages = {};
+	ddpMessages.connected = JSON.stringify({
+			msg: "connected",
+			session: "sessionId"
+	});
+
 	var SockJS = function (url) {
 		this.url = url;
 		this.onerror   = _.noop;
@@ -14,8 +20,12 @@
 		this._emit("close");
 	};
 
-	SockJS.prototype.send = function (msg) {
-		this.lastSentMsg = msg;
+	SockJS.prototype.send = function (message) {
+		this.lastSentMessage = message;
+		message = JSON.parse(message);
+		if (message.msg === "connect") {
+			this._emit("message", ddpMessages.connected);
+		}
 	};
 
 	SockJS.prototype._emit = function (event, arg) {

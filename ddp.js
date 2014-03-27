@@ -5,6 +5,9 @@
 	/////////////////////
 
 	var DDP = function (url) {
+		if (!_.isString(url)) {
+			throw new Error("First argument must be a string.");
+		}
 		this._status = "pristine";
 		this._url = url;
 		this._onReadyCallbacks = {};
@@ -203,11 +206,15 @@
 	DDP.prototype._onConnected = function (data) {
 		this._status = "connected";
 		if (_.isFunction(this.onConnected)) {
-			this.onConnected(data.sessionId);
+			this.onConnected(data.session);
 		}
 	};
 
 	DDP.prototype._onFailed = function (data) {
+		if (this._status !== "connecting") {
+			console.log("Unexpected message from server");
+			console.log(data);
+		}
 		this._status = "failed";
 		if (_.isFunction(this.onFailed)) {
 			this.onFailed(data.version);
@@ -314,10 +321,11 @@
 	DDP.prototype._onSocketMessage = function (message) {
 		var data;
 		try {
-			data = JSON.parse(message.data);
+			data = JSON.parse(message);
 		} catch (e) {
 			console.log("Non DDP message received:");
 			console.log(message);
+			return;
 		}
 		switch (data.msg) {
 			case "error":

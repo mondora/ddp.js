@@ -1,3 +1,4 @@
 node_modules/
-spec/node_modules/
-spec/ddp.js
+test/node_modules/
+test/ddp.js
+*.swp

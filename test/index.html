@@ -15,17 +15,20 @@
 	<script src="node_modules/sinon/lib/sinon/spy.js"></script>
 	<script src="node_modules/should/should.js"></script>
 	<script src="node_modules/mocha/mocha.js"></script>
+	<!--
+	<script src="node_modules/blanket/dist/mocha/blanket_mocha.js"></script>
+	-->
 	<script src="mocks/sockjs.js"></script>
 
 	<!-- Test target -->
-	<script src="ddp.js"></script>
+	<script src="ddp.js" data-cover></script>
 
 	<!-- Tests -->
 	<script>mocha.setup("bdd")</script>
-	<script src="ddp.spec.js"></script>
+	<script src="ddp.unit.js"></script>
 	<script>
 		mocha.checkLeaks();
-		mocha.globals(["DDP", "_", "SockJS"]);
+		mocha.globals(["DDP", "_", "SockJS", "LiveReload"]);
 		mocha.run();
 	</script>
 </body>

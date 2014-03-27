@@ -6,7 +6,7 @@ var plugins	= require("gulp-load-plugins")();
 
 var lrServer = tinyLr();
 var dvServer = http.createServer(function (req, res) {
-	var stServer = new static.Server("./spec/", {cache: false});
+	var stServer = new static.Server("./test/", {cache: false});
 	req.on("end", function () {
 		stServer.serve(req, res);
 	});
@@ -14,16 +14,19 @@ var dvServer = http.createServer(function (req, res) {
 });
 
 gulp.task("reload_target", function () {
-	gulp.src("spec/ddp.js").pipe(plugins.livereload(lrServer));
+	gulp.src("test/ddp.js").pipe(plugins.livereload(lrServer));
 });
 
 gulp.task("reload_tests", function () {
-	gulp.src("spec/ddp.spec.js").pipe(plugins.livereload(lrServer));
+	gulp.src("test/unit/*.unit.js")
+		.pipe(plugins.concat("ddp.unit.js"))
+		.pipe(gulp.dest("test/"))
+		.pipe(plugins.livereload(lrServer));
 });
 
 gulp.task("default", function () {
 	dvServer.listen(8080);
 	lrServer.listen(35729);
 	gulp.watch("ddp.js", ["reload_target"]);
-	gulp.watch("spec/**/*.js", ["reload_tests"]);
+	gulp.watch("test/unit/**/*.unit.js", ["reload_tests"]);
 });
