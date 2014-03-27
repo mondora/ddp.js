@@ -1,0 +1,38 @@
+{
+  "name": "ddp",
+  "version": "0.1.0",
+  "description": "ddp browser client",
+  "main": "ddp.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pscanf/ddp.js"
+  },
+  "keywords": [
+    "ddp"
+  ],
+  "author": "Paolo Scanferla <paolo.scanferla@gmail.com> (https://github.com/pscanf)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pscanf/ddp.js/issues"
+  },
+  "homepage": "https://github.com/pscanf/ddp.js",
+  "devDependencies": {
+    "gulp": "^3.5.6",
+    "gulp-concat": "^2.2.0",
+    "gulp-livereload": "^1.2.0",
+    "gulp-load-plugins": "^0.4.0",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^0.2.1",
+    "mocha": "^1.18.2",
+    "node-static": "^0.7.3",
+    "should": "^3.2.0-beta1",
+    "sinon": "^1.9.0",
+    "tiny-lr": "0.0.5"
+  },
+  "dependencies": {
+    "lodash": "^2.4.1"
+  }
+}

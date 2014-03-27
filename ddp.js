@@ -1,4 +1,4 @@
-(function($){
+(function ($) {
 
 	/////////////////////
 	// DDP constructor //
@@ -249,10 +249,10 @@
 	};
 
 	DDP.prototype._onNosub = function (data) {
-		var cb = this._onReadyCallbacks[id];
+		var cb = this._onReadyCallbacks[data.id];
 		if (_.isFunction(cb)) {
 			cb(data.error);
-			delete this._onReadyCallbacks[id];
+			delete this._onReadyCallbacks[data.id];
 		} else {
 			console.log(data);
 			throw new Error("DDP Nosub Error");
@@ -303,7 +303,7 @@
 		throw new Error("Socket Error");
 	};
 
-	DDP.prototype._onSocketOpen = function (e) {
+	DDP.prototype._onSocketOpen = function () {
 		this._send({
 			msg: "connect",
 			version: "pre1",
@@ -312,9 +312,12 @@
 	};
 
 	DDP.prototype._onSocketMessage = function (message) {
-		var data = JSON.parse(message.data);
-		if (_.isUndefined(data.msg)) {
-			return;
+		var data;
+		try {
+			data = JSON.parse(message.data);
+		} catch (e) {
+			console.log("Non DDP message received:");
+			console.log(message);
 		}
 		switch (data.msg) {
 			case "error":
@@ -348,8 +351,8 @@
 				this._onChanged(data);
 				break;
 			default:
+				console.log("Non DDP message received:");
 				console.log(data);
-				throw new Error("DDP No Corresponding Message");
 		}
 	};
 
