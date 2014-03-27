@@ -11,14 +11,14 @@ describe("The connect method", function () {
 			done();
 		});
 	});
-	it("should register its first argument as a handler of the \"connected\" event which should be called with the \"session\" property of the \"connected\" DDP message as its first argument", function (done) {
+	it("should register its first argument as a handler for the \"connected\" event which should be called with the \"session\" property of the \"connected\" DDP message as its first argument", function (done) {
 		var ddp = new DDP("");
 		ddp.connect(function (arg) {
 			arg.should.equal("sessionId");
 			done();
 		});
 	});
-	it("should register its second argument as a handler of the \"failed\" event which should be called with the \"version\" property of the \"failed\" DDP message as its first argument", function (done) {
+	it("should register its second argument as a handler for the \"failed\" event which should be called with the \"version\" property of the \"failed\" DDP message as its first argument", function (done) {
 		var ddp = new DDP("");
 		var ddpFailed = JSON.stringify({
 			msg: "failed",

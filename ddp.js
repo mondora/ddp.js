@@ -39,6 +39,9 @@
 	};
 
 	DDP.prototype.disconnect = function (onDisconnected) {
+		if (this._status !== "connected") {
+			throw new Error("This DDP connection is not open.");
+		}
 		this.onDisconnected = onDisconnected;
 		this._socket.close();
 	};
