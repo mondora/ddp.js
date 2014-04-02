@@ -28,6 +28,12 @@
     var MAX_RECONNECT_ATTEMPTS = 10;
     // Delay increment between each reconnect attempt
     var TIMER_INCREMENT = 500;
+	// List of legitimate DDP server messages, to avoid the danger
+	// of a rogue server triggering unwanted events on the client.
+	var DDP_SERVER_MESSAGES = [
+		"added", "changed", "connected", "error", "failed",
+		"nosub", "ready", "removed", "result", "updated"
+	];
 
 	// <hr />
 
@@ -45,6 +51,9 @@
         this._onResultCallbacks  = {};
         this._onUpdatedCallbacks = {};
         this._events = {};
+		// Reset reconnect parameters
+		this._reconnect_count = 0;
+		this._reconnect_incremental_timer = 0;
         // By default, connect to the DDP server.
         if (!do_not_autoconnect) this.connect();
     };
@@ -61,13 +70,10 @@
         // Instantiate a new socket.
         this._socket = new this._SocketConstructor(this._endpoint);
         // Attach socket event listeners (binding them to the correct object).
-        this._socket.onopen    = this._onSocketOpen.bind(this);
-        this._socket.onmessage = this._onSocketMessage.bind(this);
-        this._socket.onerror   = this._onSocketError.bind(this);
-        this._socket.onclose   = this._onSocketClose.bind(this);
-        // Reset reconnect counts and timer increments.
-        this._reconnect_count = 0;
-        this._reconnect_incremental_timer = 0;
+        this._socket.onopen = this._on_socket_open.bind(this);
+        this._socket.onmessage = this._on_socket_message.bind(this);
+        this._socket.onerror = this._on_socket_error.bind(this);
+        this._socket.onclose = this._on_socket_close.bind(this);
     };
 
     // #####method
@@ -133,17 +139,21 @@
 	//
     DDP.prototype.off = function (name, handler) {
         // Check if any handlers are registered for the event.
-        if (name in this._events === false) return;
+        if (!this._events[name]) return;
         // If so, remove the provided handler (if it's contained in the array).
         this._events[name].splice(this._events[name].indexOf(handler), 1);
     };
 
-    // #####emit
+	// <hr />
+
+    // ###DDP private methods
+
+    // #####_emit
 
 	//
-    DDP.prototype.emit = function (name /* , arguments */) {
+    DDP.prototype._emit = function (name /* , arguments */) {
         // Check if any handlers are registered for the event.
-        if (name in this._events === false) return;
+        if (!this._events[name]) return;
         // If so, call each of the handlers, binding them to the right object
         // and passing them the provided arguments.
         var args = arguments;
@@ -152,10 +162,6 @@
             handler.apply(self, Array.prototype.slice.call(args, 1));
         });
     };
-
-	// <hr />
-
-    // ###DDP private methods
 
     // #####_send
 
@@ -191,77 +197,81 @@
 
     // ####DDP events handled by the library
 
-    // Object containing built-in event handlers
-    DDP.prototype._on = {};
-
-    // #####_on.result
+    // #####_on_result
 
 	//
-    DDP.prototype._on.result = function (data) {
-        // Try invoking the cllback.
-        try {
-            this._onResultCallbacks[data.id](data.error, data.result);
-        // Silently ignore fails.
-        } catch (e) {
-        // Delete the callback(s) to prevent memory leaks.
-        } finally {
-            delete this._onResultCallbacks[data.id];
-            if (data.error) delete this._onUpdatedCallbacks[data.id];
-        }
+    DDP.prototype._on_result = function (data) {
+		// If a callback is defined
+		if (this._onResultCallbacks[data.id]) {
+			// Invoke it with the right arguments, then delete it
+			this._onResultCallbacks[data.id](data.error, data.result);
+			delete this._onResultCallbacks[data.id];
+			// If the method resulted in an error, there won't be any
+			// "updated" message, therefore delete the callback
+			// associated to it (if any)
+			if (data.error) delete this._onUpdatedCallbacks[data.id];
+		// If there is no callback
+		} else {
+			// If the method resulted in an error
+			if (data.error) {
+				// Delete the "updated" callback (if any)
+				delete this._onUpdatedCallbacks[data.id];
+				// Raise an exception
+				throw new Error(data.error);
+			}
+		}
     };
 
-    // #####_on.updated
+    // #####_on_updated
 
 	//
-    DDP.prototype._on.updated = function (data) {
+    DDP.prototype._on_updated = function (data) {
         var self = this;
         // Since an "updated" message can refer to many methods, iterate
         // through the metodhs list.
         data.methods.forEach(function (id) {
-            // Try invoking the cllback.
-            try {
-                self._onUpdatedCallbacks[id]();
-            // Silently ignore fails.
-            } catch (e) {
-            // Delete the callback to prevent memory leaks.
-            } finally {
-                delete self._onUpdatedCallbacks[id];
-            }
+			// And if there is a callback for an id
+			if (self._onUpdatedCallbacks[id]) {
+				// Invoke it
+				self._onUpdatedCallbacks[id]();
+				// Delete it
+				delete self._onUpdatedCallbacks[id];
+			}
         });
     };
 
-    // #####_on.nosub
+    // #####_on_nosub
 
 	//
-    DDP.prototype._on.nosub = function (data) {
-        // Try invoking the cllback.
-        try {
-            this._onReadyCallbacks[data.id](data.error);
-        // Silently ignore fails.
-        } catch (e) {
-        // Delete the callback to prevent memory leaks.
-        } finally {
-            delete this._onReadyCallbacks[data.id];
-        }
+    DDP.prototype._on_nosub = function (data) {
+		// If there is a callback for the "ready" message
+		if (this._onReadyCallbacks[data.id]) {
+			// Call it passing it the error
+			this._onReadyCallbacks[data.id](data.error);
+			// Delete it
+			delete this._onReadyCallbacks[data.id];
+		// If there is no such callback
+		} else {
+			// Raise an exception
+			throw new Error(data.error);
+		}
     };
 
-    // #####_on.ready
+    // #####_on_ready
 
 	//
-    DDP.prototype._on.ready = function (data) {
+    DDP.prototype._on_ready = function (data) {
         var self = this;
         // Since an "ready" message can refer to many subscriptions, iterate
         // through the metodhs list.
         data.subs.forEach(function (id) {
-            // Try invoking the cllback.
-            try {
-                self._onReadyCallbacks[id]();
-            // Silently ignore fails.
-            } catch (e) {
-            // Delete the callback to prevent memory leaks.
-            } finally {
-                delete self._onReadyCallbacks[id];
-            }
+			// And if there is a callback for an id
+			if (self._onReadyCallbacks[id]) {
+				// Invoke it
+				self._onReadyCallbacks[id]();
+				// Delete it
+				delete self._onReadyCallbacks[id];
+			}
         });
     };
 
@@ -270,23 +280,26 @@
     // ####DDP events **not** handled by the library
 
 	//
-    DDP.prototype._on.error = function (data) {
-        this.emit("error", data);
+    DDP.prototype._on_error = function (data) {
+        this._emit("error", data);
     };
-    DDP.prototype._on.connected = function (data) {
-        this.emit("connected", data);
+    DDP.prototype._on_connected = function (data) {
+		// Reset reconnect counters
+        this._reconnect_count = 0;
+        this._reconnect_incremental_timer = 0;
+        this._emit("connected", data);
     };
-    DDP.prototype._on.failed = function (data) {
-        this.emit("failed", data);
+    DDP.prototype._on_failed = function (data) {
+        this._emit("failed", data);
     };
-    DDP.prototype._on.added = function (data) {
-        this.emit("added", data);
+    DDP.prototype._on_added = function (data) {
+        this._emit("added", data);
     };
-    DDP.prototype._on.removed = function (data) {
-        this.emit("removed", data);
+    DDP.prototype._on_removed = function (data) {
+        this._emit("removed", data);
     };
-    DDP.prototype._on.changed = function (data) {
-        this.emit("changed", data);
+    DDP.prototype._on_changed = function (data) {
+        this._emit("changed", data);
     };
 
 	// <hr />
@@ -294,15 +307,15 @@
     // ####Socket event handlers (handled by the library)
 
 	//
-    DDP.prototype._onSocketClose = function () {
-        this.emit("socket_close");
+    DDP.prototype._on_socket_close = function () {
+        this._emit("socket_close");
         if (this._autoreconnect) this._try_reconnect();
     };
-    DDP.prototype._onSocketError = function (e) {
-        this.emit("socket_error", e);
+    DDP.prototype._on_socket_error = function (e) {
+        this._emit("socket_error", e);
         if (this._autoreconnect) this._try_reconnect();
     };
-    DDP.prototype._onSocketOpen = function () {
+    DDP.prototype._on_socket_open = function () {
         this._send({
             msg: "connect",
             version: "pre1",
@@ -310,28 +323,30 @@
         });
     };
 
-    // #####_onSocketMessage
+    // #####_on_socket_message
 
 	//
-    DDP.prototype._onSocketMessage = function (message) {
+    DDP.prototype._on_socket_message = function (message) {
+		var data;
         // Ignore the INIT_DDP_MESSAGE
         if (message.data === INIT_DDP_MESSAGE) return;
         try {
-            var data;
             // Parse the message, using EJSON if available.
             if (typeof EJSON === "undefined") {
                 data = JSON.parse(message.data);
             } else {
                 data = EJSON.parse(message.data);
             }
-            // Call the appropriate message handler.
-            this._on[data.msg].call(this, data);
+			if (DDP_SERVER_MESSAGES.indexOf(data.msg) === -1) throw new Error();
         } catch (e) {
             // If the message does not parse and therefore (E)JSON.parse
             // throws an error, warn the user about the malformed message.
             console.warn("Non DDP message received:");
             console.warn(message.data);
+			return;
         }
+        // Call the appropriate message handler.
+		this["_on_" + data.msg](data);
     };
 
 	// <hr />

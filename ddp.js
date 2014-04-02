@@ -31,7 +31,7 @@
     };
     DDP.prototype.constructor = DDP;
 
-    DDP.prototype.connect = function (callback) {
+    DDP.prototype.connect = function () {
         this._socket = new this._SocketConstructor(this._endpoint);
         this._socket.onopen = this._on_socket_open.bind(this);
         this._socket.onmessage = this._on_socket_message.bind(this);
