@@ -1,13 +1,3 @@
-#ddp.js
-
-A javascript ddp client that runs both in the browser and in node.
-
-##WHY
-
-This is the foundation of a project I'm working on to decouple meteor's client and server sides. It allows the to connect through ddp to a meteor server, and use all of the wonderful facilities meteor provides.
-
-The project was inspired by [ddp-browser-client](https://github.com/bmcmahen/ddp-browser-client), but I decided to re-implement the library from scratch to get a better understanding of the ddp protocol and to adapt it to run on node as well.
-
 ##API
 
 

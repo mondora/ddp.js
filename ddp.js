@@ -1,371 +1,208 @@
-(function ($) {
+(function () {
 
-	/////////////////////
-	// DDP constructor //
-	/////////////////////
+    "use strict";
 
-	var DDP = function (url) {
-		if (!_.isString(url)) {
-			throw new Error("First argument must be a string.");
-		}
-		this._status = "pristine";
-		this._url = url;
-		this._onReadyCallbacks = {};
-		this._onResultCallbacks = {};
-		this._onUpdatedCallbacks = {};
-		this._onAddedCallbacks = [];
-		this._onRemovedCallbacks = [];
-		this._onChangedCallbacks = [];
-	};
+    var uniqueId = (function () {
+        var i = 0;
+        return function () {
+            return (i++).toString();
+        };
+    })();
 
-	DDP.prototype.constructor = DDP;
+    var INIT_DDP_MESSAGE = "{\"server_id\":\"0\"}";
+    var MAX_RECONNECT_ATTEMPTS = 10;
+    var TIMER_INCREMENT = 500;
+	var DDP_SERVER_MESSAGES = [
+		"added", "changed", "connected", "error", "failed",
+		"nosub", "ready", "removed", "result", "updated"
+	];
 
-	////////////////////////
-	// DDP public methods //
-	////////////////////////
+    var DDP = function (endpoint, SocketConstructor, do_not_autoconnect, do_not_autoreconnect) {
+        this._endpoint = endpoint;
+        this._SocketConstructor = SocketConstructor;
+        this._autoreconnect = !do_not_autoreconnect;
+        this._onReadyCallbacks   = {};
+        this._onResultCallbacks  = {};
+        this._onUpdatedCallbacks = {};
+        this._events = {};
+		this._reconnect_count = 0;
+		this._reconnect_incremental_timer = 0;
+        if (!do_not_autoconnect) this.connect();
+    };
+    DDP.prototype.constructor = DDP;
 
-	DDP.prototype.connect = function (onConnected, onFailed) {
-		if (this._status !== "pristine") {
-			throw new Error("This DDP connection has already been opened.");
-		}
-		this._status = "connecting";
-		this.onConnected = onConnected;
-		this.onFailed    = onFailed;
-		this._socket = new SockJS(this._url);
-		this._socket.onopen    = _.bind(this._onSocketOpen, this);
-		this._socket.onmessage = _.bind(this._onSocketMessage, this);
-		this._socket.onerror   = _.bind(this._onSocketError, this);
-		this._socket.onclose   = _.bind(this._onSocketClose, this);
-	};
+    DDP.prototype.connect = function (callback) {
+        this._socket = new this._SocketConstructor(this._endpoint);
+        this._socket.onopen = this._on_socket_open.bind(this);
+        this._socket.onmessage = this._on_socket_message.bind(this);
+        this._socket.onerror = this._on_socket_error.bind(this);
+        this._socket.onclose = this._on_socket_close.bind(this);
+    };
 
-	DDP.prototype.disconnect = function (onDisconnected) {
-		if (this._status !== "connected") {
-			throw new Error("This DDP connection is not open.");
-		}
-		this.onDisconnected = onDisconnected;
-		this._socket.close();
-	};
+    DDP.prototype.method = function (name, params, onResult, onUpdated) {
+        var id = uniqueId();
+        this._onResultCallbacks[id] = onResult;
+        this._onUpdatedCallbacks[id] = onUpdated;
+        this._send({
+            msg: "method",
+            id: id,
+            method: name,
+            params: params
+        });
+    };
 
-	DDP.prototype.method = function (name, params, onResult, onUpdated) {
-		var id = _.uniqueId();
-		this._onResultCallbacks[id] = onResult;
-		this._onUpdatedCallbacks[id] = onUpdated;
-		this._send({
-			msg: "method",
-			id: id,
-			method: name,
-			params: params
-		});
-	};
+    DDP.prototype.sub = function (name, params, onReady) {
+        var id = uniqueId();
+        this._onReadyCallbacks[id] = onReady;
+        this._send({
+            msg: "sub",
+            id: id,
+            name: name,
+            params: params
+        });
+    };
 
-	DDP.prototype.sub = function (name, params, onReady) {
-		var id = _.uniqueId();
-		this._onReadyCallbacks[id] = onReady || _.noop;
-		this._send({
-			msg: "sub",
-			id: id,
-			name: name,
-			params: params
-		});
-	};
+    DDP.prototype.unsub = function (id) {
+        this._send({
+            msg: "unsub",
+            id: id
+        });
+    };
 
-	DDP.prototype.unsub = function (id) {
-		this._send({
-			msg: "unsub",
-			id: id
-		});
-	};
+    DDP.prototype.on = function (name, handler) {
+        this._events[name] = this._events[name] || [];
+        this._events[name].push(handler);
+    };
 
-	DDP.prototype.getStatus = function () {
-		return this._status;
-	};
+    DDP.prototype.off = function (name, handler) {
+        if (!this._events[name]) return;
+        this._events[name].splice(this._events[name].indexOf(handler), 1);
+    };
 
-	DDP.prototype.on = function (eventName, eventHandler) {
-		if (_.isString(eventName) && _.isFunction(eventHandler)) {
-			switch (eventName) {
-				case "added":
-					this._onAddedCallbacks.push(eventHandler);
-					break;
-				case "removed":
-					this._onRemovedCallbacks.push(eventHandler);
-					break;
-				case "changed":
-					this._onChangedCallbacks.push(eventHandler);
-					break;
-				default:
-					throw new Error("DDP Unknown event name.");
-			}
-			return;
-		}
-		throw new Error("DDP Bad call to the \"on\" method.");
-	};
+    DDP.prototype._emit = function (name /* , arguments */) {
+        if (!this._events[name]) return;
+        var args = arguments;
+        var self = this;
+        this._events[name].forEach(function (handler) {
+            handler.apply(self, Array.prototype.slice.call(args, 1));
+        });
+    };
 
-	DDP.prototype.once = function (eventName, eventHandler) {
-		if (_.isString(eventName) && _.isFunction(eventHandler)) {
-			eventHandler = _.once(eventHandler);
-			switch (eventName) {
-				case "added":
-					this._onAddedCallbacks.push(eventHandler);
-					break;
-				case "removed":
-					this._onRemovedCallbacks.push(eventHandler);
-					break;
-				case "changed":
-					this._onChangedCallbacks.push(eventHandler);
-					break;
-				default:
-					throw new Error("DDP Unknown event name.");
-			}
-			return;
-		}
-		throw new Error("DDP Bad call to the \"once\" method.");
-	};
+    DDP.prototype._send = function (object) {
+        var message;
+        if (typeof EJSON === "undefined") {
+            message = JSON.stringify(object);
+        } else {
+            message = EJSON.stringify(object);
+        }
+        this._socket.send(message);
+    };
 
-	DDP.prototype.off = function (eventName, eventHandler) {
-		if (_.isUndefined(eventName) && _.isUndefined(eventHandler)) {
-			this._onAddedCallbacks   = [];
-			this._onRemovedCallbacks = [];
-			this._onChangedCallbacks = [];
-			return;
-		}
-		if (_.isFunction(eventName) && _.isUndefined(eventHandler)) {
-			this._onAddedCallbacks   = _.without(this._onAddedCallbacks,   eventHandler);
-			this._onRemovedCallbacks = _.without(this._onRemovedCallbacks, eventHandler);
-			this._onChangedCallbacks = _.without(this._onChangedCallbacks, eventHandler);
-			return;
-		}
-		if (_.isString(eventName) && _.isUndefined(eventHandler)) {
-			switch (eventName) {
-				case "added":
-					this._onAddedCallbacks = [];
-					break;
-				case "removed":
-					this._onRemovedCallbacks = [];
-					break;
-				case "changed":
-					this._onChangedCallbacks = [];
-					break;
-				default:
-					throw new Error("DDP Unknown event name.");
-			}
-			return;
-		}
-		if (_.isString(eventName) && _.isFunction(eventHandler)) {
-			switch (eventName) {
-				case "added":
-					this._onAddedCallbacks   = _.without(this._onAddedCallbacks,   eventHandler);
-					break;
-				case "removed":
-					this._onRemovedCallbacks = _.without(this._onRemovedCallbacks, eventHandler);
-					break;
-				case "changed":
-					this._onChangedCallbacks = _.without(this._onChangedCallbacks, eventHandler);
-					break;
-				default:
-					throw new Error("DDP Unknown event name.");
-			}
-			return;
-		}
-		throw new Error("DDP Bad call to the \"off\" method.");
-	};
+    DDP.prototype._try_reconnect = function () {
+        if (this._reconnect_count < MAX_RECONNECT_ATTEMPTS) {
+            setTimeout(this.connect.bind(this), this._reconnect_incremental_timer);
+        }
+        this._reconnect_count += 1;
+        this._reconnect_incremental_timer += TIMER_INCREMENT * this._reconnect_count;
+    };
 
-	DDP.prototype.getListeners = function (eventName) {
-		if (_.isString(eventName)) {
-			switch (eventName) {
-				case "added":
-					return this._onAddedCallbacks;
-				case "removed":
-					return this._onRemovedCallbacks;
-				case "changed":
-					return this._onChangedCallbacks;
-				default:
-					throw new Error("DDP Unknown event name.");
-			}
-		}
-		return {
-			added:   this._onAddedCallbacks,
-			removed: this._onRemovedCallbacks,
-			changed: this._onChangedCallbacks
-		};
-	};
-
-	/////////////////////////
-	// DDP private methods //
-	/////////////////////////
-
-	DDP.prototype._send = function (object) {
-		this._socket.send(JSON.stringify(object));
-	};
-
-	//////////////////////////
-	// DDP message handlers //
-	//////////////////////////
-
-	DDP.prototype._onError = function (data) {
-		console.log(data);
-		throw new Error("DDP Error");
-	};
-
-	DDP.prototype._onConnected = function (data) {
-		this._status = "connected";
-		if (_.isFunction(this.onConnected)) {
-			this.onConnected(data.session);
-		}
-	};
-
-	DDP.prototype._onFailed = function (data) {
-		if (this._status !== "connecting") {
-			console.log("Unexpected message from server");
-			console.log(data);
-		}
-		this._status = "failed";
-		if (_.isFunction(this.onFailed)) {
-			this.onFailed(data.version);
+    DDP.prototype._on_result = function (data) {
+		if (this._onResultCallbacks[data.id]) {
+			this._onResultCallbacks[data.id](data.error, data.result);
+			delete this._onResultCallbacks[data.id];
+			if (data.error) delete this._onUpdatedCallbacks[data.id];
 		} else {
-			console.log(data);
-			throw new Error("DDP Connection Failed");
-		}
-	};
-
-	DDP.prototype._onResult = function (data) {
-		var cb = this._onResultCallbacks[data.id];
-		if (data.error) {
-			if (_.isFunction(cb)) {
-				cb(data.error, data.result);
-				delete this._onResultCallbacks[data.id];
+			if (data.error) {
 				delete this._onUpdatedCallbacks[data.id];
-			} else {
-				delete this._onUpdatedCallbacks[data.id];
-				console.log(data);
-				throw new Error("DDP Method Error");
-			}
-		} else {
-			if (_.isFunction(cb)) {
-				cb(false, data.result);
-				delete this._onResultCallbacks[data.id];
+				throw new Error(data.error);
 			}
 		}
-	};
-
-	DDP.prototype._onUpdated = function (data) {
-		var self = this;
-		_.forEach(data.methods, function (id) {
-			var cb = self._onUpdatedCallbacks[id];
-			if (_.isFunction(cb)) {
-				cb();
+    };
+    DDP.prototype._on_updated = function (data) {
+        var self = this;
+        data.methods.forEach(function (id) {
+			if (self._onUpdatedCallbacks[id]) {
+				self._onUpdatedCallbacks[id]();
+				delete self._onUpdatedCallbacks[id];
 			}
-			delete self._onUpdatedCallbacks[id];
-		});
-	};
-
-	DDP.prototype._onNosub = function (data) {
-		var cb = this._onReadyCallbacks[data.id];
-		if (_.isFunction(cb)) {
-			cb(data.error);
+        });
+    };
+    DDP.prototype._on_nosub = function (data) {
+		if (this._onReadyCallbacks[data.id]) {
+			this._onReadyCallbacks[data.id](data.error);
 			delete this._onReadyCallbacks[data.id];
 		} else {
-			console.log(data);
-			throw new Error("DDP Nosub Error");
+			throw new Error(data.error);
 		}
-	};
-
-	DDP.prototype._onReady = function (data) {
-		var self = this;
-		_.forEach(data.subs, function (id) {
-			var cb = self._onReadyCallbacks[id];
-			if (_.isFunction(cb)) {
-				cb();
+    };
+    DDP.prototype._on_ready = function (data) {
+        var self = this;
+        data.subs.forEach(function (id) {
+			if (self._onReadyCallbacks[id]) {
+				self._onReadyCallbacks[id]();
+				delete self._onReadyCallbacks[id];
 			}
-			delete self._onReadyCallbacks[id];
 		});
-	};
+    };
 
-	DDP.prototype._onAdded = function (data) {
-		_.forEach(this._onAddedCallbacks, function (fn) {
-			fn(data);
-		});
-	};
+    DDP.prototype._on_error = function (data) {
+        this._emit("error", data);
+    };
+    DDP.prototype._on_connected = function (data) {
+        this._reconnect_count = 0;
+        this._reconnect_incremental_timer = 0;
+        this._emit("connected", data);
+    };
+    DDP.prototype._on_failed = function (data) {
+        this._emit("failed", data);
+    };
+    DDP.prototype._on_added = function (data) {
+        this._emit("added", data);
+    };
+    DDP.prototype._on_removed = function (data) {
+        this._emit("removed", data);
+    };
+    DDP.prototype._on_changed = function (data) {
+        this._emit("changed", data);
+    };
 
-	DDP.prototype._onRemoved = function (data) {
-		_.forEach(this._onRemovedCallbacks, function (fn) {
-			fn(data);
-		});
-	};
-
-	DDP.prototype._onChanged = function (data) {
-		_.forEach(this._onChangedCallbacks, function (fn) {
-			fn(data);
-		});
-	};
-
-	///////////////////////////
-	// Socket event handlers //
-	///////////////////////////
-
-	DDP.prototype._onSocketClose = function () {
-		this._status = "disconnected";
-		_.isFunction(this.onDisconnected) && this.onDisconnected();
-	};
-
-	DDP.prototype._onSocketError = function (e) {
-		this._status = "error";
-		console.log(e);
-		throw new Error("Socket Error");
-	};
-
-	DDP.prototype._onSocketOpen = function () {
-		this._send({
-			msg: "connect",
-			version: "pre1",
-			support: ["pre1"]
-		});
-	};
-
-	DDP.prototype._onSocketMessage = function (message) {
-		var data;
-		try {
-			data = JSON.parse(message);
-		} catch (e) {
-			console.log("Non DDP message received:");
-			console.log(message);
+    DDP.prototype._on_socket_close = function () {
+        this._emit("socket_close");
+        if (this._autoreconnect) this._try_reconnect();
+    };
+    DDP.prototype._on_socket_error = function (e) {
+        this._emit("socket_error", e);
+        if (this._autoreconnect) this._try_reconnect();
+    };
+    DDP.prototype._on_socket_open = function () {
+        this._send({
+            msg: "connect",
+            version: "pre1",
+            support: ["pre1"]
+        });
+    };
+    DDP.prototype._on_socket_message = function (message) {
+        var data;
+        if (message.data === INIT_DDP_MESSAGE) return;
+        try {
+            if (typeof EJSON === "undefined") {
+                data = JSON.parse(message.data);
+            } else {
+                data = EJSON.parse(message.data);
+            }
+			if (DDP_SERVER_MESSAGES.indexOf(data.msg) === -1) throw new Error();
+        } catch (e) {
+            console.warn("Non DDP message received:");
+            console.warn(message.data);
 			return;
 		}
-		switch (data.msg) {
-			case "error":
-				this._onError(data);
-				break;
-			case "connected":
-				this._onConnected(data);
-				break;
-			case "failed":
-				this._onFailed(data);
-				break;
-			case "result":
-				this._onResult(data);
-				break;
-			case "updated":
-				this._onUpdated(data);
-				break;
-			case "nosub":
-				this._onNosub(data);
-				break;
-			case "ready":
-				this._onReady(data);
-				break;
-			case "added":
-				this._onAdded(data);
-				break;
-			case "removed":
-				this._onRemoved(data);
-				break;
-			case "changed":
-				this._onChanged(data);
-				break;
-			default:
-				console.log("Non DDP message received:");
-				console.log(data);
-		}
+		this["_on_" + data.msg](data);
 	};
 
-	$.DDP = DDP;
-})(window);
+    if (typeof module !== "undefined" && module.exports) {
+        module.exports = DDP;
+    } else {
+        window.DDP = DDP;
+    }
+
+})();

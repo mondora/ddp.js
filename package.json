@@ -1,7 +1,7 @@
 {
   "name": "ddp",
-  "version": "0.1.0",
-  "description": "ddp browser client",
+  "version": "0.2.0",
+  "description": "ddp javascript client",
   "main": "ddp.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -25,15 +25,15 @@
     "gulp-concat": "^2.2.0",
     "gulp-livereload": "^1.2.0",
     "gulp-load-plugins": "^0.4.0",
+    "gulp-mocha": "^0.4.1",
+    "gulp-open": "^0.2.8",
     "gulp-rename": "^1.2.0",
     "gulp-uglify": "^0.2.1",
+    "lodash": "^2.4.1",
     "mocha": "^1.18.2",
     "node-static": "^0.7.3",
     "should": "^3.2.0-beta1",
     "sinon": "^1.9.0",
     "tiny-lr": "0.0.5"
-  },
-  "dependencies": {
-    "lodash": "^2.4.1"
   }
 }

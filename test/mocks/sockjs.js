@@ -1,10 +1,4 @@
-(function ($) {
-
-	$.ddpMessages = {};
-	ddpMessages.connected = JSON.stringify({
-			msg: "connected",
-			session: "sessionId"
-	});
+(function () {
 
 	var SockJS = function (url) {
 		this.url = url;
@@ -21,11 +15,9 @@
 	};
 
 	SockJS.prototype.send = function (message) {
-		this.lastSentMessage = message;
 		message = JSON.parse(message);
-		if (message.msg === "connect") {
-			this._emit("message", ddpMessages.connected);
-		}
+		this.lastSentMessage = message;
+		this._server(message);
 	};
 
 	SockJS.prototype._emit = function (event, arg) {
@@ -47,5 +39,70 @@
 		}
 	};
 
-	$.SockJS = SockJS;
-})(window);
+	SockJS.prototype._server = function (message) {
+		var res = {};
+		var data = {};
+		switch (message.msg) {
+			case "connect":
+				data.msg = "connected";
+				data.session = "fake_session_id";
+				res.data = JSON.stringify(data);
+				this._emit("message", res);
+				break;
+			case "sub":
+
+				if (message.name === "ok") {
+					data.msg = "ready";
+					data.subs = [message.id];
+					res.data = JSON.stringify(data);
+					this._emit("message", res);
+				}
+
+				if (message.name === "nosub") {
+					data.id = message.id;
+					data.msg = "nosub";
+					data.error = "error";
+					res.data = JSON.stringify(data);
+					this._emit("message", res);
+				}
+
+				break;
+			case "unsub":
+				break;
+			case "method":
+
+				if (message.method === "ok") {
+					data.id = message.id;
+					data.msg = "result";
+					data.result = "result";
+					res.data = JSON.stringify(data);
+					this._emit("message", res);
+				}
+
+				if (message.method === "throw") {
+					data.id = message.id;
+					data.msg = "result";
+					data.error = "error";
+					res.data = JSON.stringify(data);
+					this._emit("message", res);
+				}
+
+				if (message.method === "update") {
+					data.msg = "updated";
+					data.methods = [message.id];
+					res.data = JSON.stringify(data);
+					this._emit("message", res);
+				}
+
+				break;
+			default:
+		}
+	};
+
+    if (typeof module !== "undefined" && module.exports) {
+        module.exports = SockJS;
+    } else {
+        window.SockJS = SockJS;
+    }
+
+})();

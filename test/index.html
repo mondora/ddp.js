@@ -11,8 +11,7 @@
 	<script src="node_modules/lodash/dist/lodash.compat.js"></script>
 
 	<!-- Dev dependencies -->
-	<script src="node_modules/sinon/lib/sinon.js"></script>
-	<script src="node_modules/sinon/lib/sinon/spy.js"></script>
+	<script src="node_modules/sinon/pkg/sinon-1.9.0.js"></script>
 	<script src="node_modules/should/should.js"></script>
 	<script src="node_modules/mocha/mocha.js"></script>
 	<!--
@@ -28,7 +27,7 @@
 	<script src="ddp.unit.js"></script>
 	<script>
 		mocha.checkLeaks();
-		mocha.globals(["DDP", "_", "SockJS", "LiveReload"]);
+		mocha.globals(["DDP", "_", "SockJS", "LiveReload", "EJSON"]);
 		mocha.run();
 	</script>
 </body>
