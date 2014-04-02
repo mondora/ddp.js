@@ -8,6 +8,24 @@ This is the foundation of a project I'm working on to decouple meteor's client a
 
 The project was inspired by [ddp-browser-client](https://github.com/bmcmahen/ddp-browser-client), but I decided to re-implement the library from scratch to get a better understanding of the ddp protocol and to adapt it to run on node as well.
 
+##TESTS
+
+Clone the repository
+
+    git clone https://github.com/pscanf/ddp.js
+	cd ddp.js
+
+Install dependencies
+
+	npm install
+	npm install -g gulp mocha
+
+Run tests
+
+	gulp test-node
+	gulp test-browser
+
+
 ##API
 
 
