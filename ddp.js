@@ -9,6 +9,28 @@
         };
     })();
 
+	var shimUnderscore = function () {
+		var _ = {};
+		_.forEach = function(obj, iterator, context) {
+			var nativeForEach = Array.prototype.forEach;
+			if (nativeForEach && obj.forEach === nativeForEach) {
+				return obj.forEach(iterator, context);
+			}
+			throw new Error("Unsupported browser. Include underscore.js for compatibility.");
+		}; 
+		_.bind = function(func, context) {
+			var nativeBind = Function.prototype.bind;
+			if (nativeBind && func.bind === nativeBind) {
+				return nativeBind.apply(func, Array.prototype.slice.call(arguments, 1));
+			}
+			throw new Error("Unsupported browser. Include underscore.js for compatibility.");
+		};
+		return _;
+	};
+	if (typeof _ === "undefined") {
+		var _ = shimUnderscore();
+	}
+
     var INIT_DDP_MESSAGE = "{\"server_id\":\"0\"}";
     var MAX_RECONNECT_ATTEMPTS = 10;
     var TIMER_INCREMENT = 500;
@@ -33,10 +55,10 @@
 
     DDP.prototype.connect = function () {
         this._socket = new this._SocketConstructor(this._endpoint);
-        this._socket.onopen = this._on_socket_open.bind(this);
-        this._socket.onmessage = this._on_socket_message.bind(this);
-        this._socket.onerror = this._on_socket_error.bind(this);
-        this._socket.onclose = this._on_socket_close.bind(this);
+        this._socket.onopen = _.bind(this._on_socket_open, this);
+        this._socket.onmessage = _.bind(this._on_socket_message, this);
+        this._socket.onerror = _.bind(this._on_socket_error, this);
+        this._socket.onclose = _.bind(this._on_socket_close, this);
     };
 
     DDP.prototype.method = function (name, params, onResult, onUpdated) {
@@ -83,7 +105,7 @@
         if (!this._events[name]) return;
         var args = arguments;
         var self = this;
-        this._events[name].forEach(function (handler) {
+        _.forEach(this._events[name], function (handler) {
             handler.apply(self, Array.prototype.slice.call(args, 1));
         });
     };
@@ -100,7 +122,7 @@
 
     DDP.prototype._try_reconnect = function () {
         if (this._reconnect_count < MAX_RECONNECT_ATTEMPTS) {
-            setTimeout(this.connect.bind(this), this._reconnect_incremental_timer);
+            setTimeout(_.bind(this.connect, this), this._reconnect_incremental_timer);
         }
         this._reconnect_count += 1;
         this._reconnect_incremental_timer += TIMER_INCREMENT * this._reconnect_count;
@@ -120,7 +142,7 @@
     };
     DDP.prototype._on_updated = function (data) {
         var self = this;
-        data.methods.forEach(function (id) {
+        _.forEach(data.methods, function (id) {
 			if (self._onUpdatedCallbacks[id]) {
 				self._onUpdatedCallbacks[id]();
 				delete self._onUpdatedCallbacks[id];
@@ -137,7 +159,7 @@
     };
     DDP.prototype._on_ready = function (data) {
         var self = this;
-        data.subs.forEach(function (id) {
+        _.forEach(data.subs, function (id) {
 			if (self._onReadyCallbacks[id]) {
 				self._onReadyCallbacks[id]();
 				delete self._onReadyCallbacks[id];

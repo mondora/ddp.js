@@ -29,6 +29,16 @@ describe("The library ddp.js", function () {
 
 });
 
+/*
+describe("The shimUnderscore private function", function () {
+
+	it("should return an object with forEach and bind methods", function () {
+		// Test it with rewire
+	});
+
+});
+*/
+
 var optionsAutoconnect = {
 	endpoint: "",
 	SocketConstructor: SockJS
