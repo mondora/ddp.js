@@ -5,7 +5,7 @@ describe("The _on_result private method", function () {
 		describe("if _onResultCallbacks[id] exists", function () {
 
 			it("should call it, passing error and result as first and second arguments respectively", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {},
@@ -18,7 +18,7 @@ describe("The _on_result private method", function () {
 			});
 
 			it("should delete that reference to the function after calling it", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {},
@@ -31,7 +31,7 @@ describe("The _on_result private method", function () {
 			});
 
 			it("and if error is truthy, should delete the _onUpdatedCallbacks[id] after calling _onResultCallbacks[id]", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {},
@@ -49,7 +49,7 @@ describe("The _on_result private method", function () {
 		describe("if _onResultCallbacks[id] doesn't exist", function () {
 
 			it("should not throw an error if error is falsy", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					result: {}
@@ -60,7 +60,7 @@ describe("The _on_result private method", function () {
 			});
 
 			it("should throw an error if error is truthy", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {}
@@ -71,7 +71,7 @@ describe("The _on_result private method", function () {
 			});
 
 			it("should delete the _onUpdatedCallbacks[id] if error is truthy", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {},

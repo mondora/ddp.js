@@ -3,7 +3,7 @@ describe("The _on_ready private method", function () {
 	describe("receives as only argument an object containing the property subs (an array of ids) and", function () {
 
 		it("should call all of the _onReadyCallbacks[id] where id belongs to method", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				subs: ["0", "1", "2", "3"]
 			};
@@ -17,7 +17,7 @@ describe("The _on_ready private method", function () {
 		});
 
 		it("it should delete the _onReadyCallbacks[id]-s it calls after calling them", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				subs: ["0", "1", "2", "3"]
 			};
@@ -35,7 +35,7 @@ describe("The _on_ready private method", function () {
 		});
 
 		it("it should not call _onReadyCallbacks[id] if id belongs to subs but _onReadyCallbacks[id] is undefined", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				subs: ["0", "1", "2", "3", "4"]
 			};

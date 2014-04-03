@@ -1,7 +1,7 @@
 describe("The _emit private method", function () {
 
 	it("should call all registered handlers on the event provided as first argument", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var event = {
 			name: "name",
 			handler: sinon.spy()
@@ -13,7 +13,7 @@ describe("The _emit private method", function () {
 	});
 
 	it("should proxy all arguments except the first to the handler", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var event = {
 			name: "name",
 			handler: sinon.spy()

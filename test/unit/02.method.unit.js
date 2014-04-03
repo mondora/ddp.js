@@ -1,7 +1,7 @@
 describe("The method method", function () {
 
 	it("should send a \"method\" DDP message to the server", function (done) {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var ddpMethod = {
 			msg: "method",
 			method: "ok",
@@ -16,7 +16,7 @@ describe("The method method", function () {
 	});
 
 	it("should register its thrid argument as handler for the \"result\" event", function (done) {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var handler = function () {};
 		ddp.on("connected", function () {
 			ddp.method("method", [""], handler);
@@ -26,7 +26,7 @@ describe("The method method", function () {
 	});
 
 	it("should register its fourth argument as handler for the \"updated\" event", function (done) {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var handler = function () {};
 		ddp.on("connected", function () {
 			ddp.method("method", [""], null, handler);

@@ -1,7 +1,7 @@
 describe("The unsub method", function () {
 
 	it("should send an \"unsub\" DDP message to the server", function (done) {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var ddpUnsub = {
 			msg: "unsub",
 			id: "fake_sub_id"

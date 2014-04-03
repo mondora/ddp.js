@@ -3,7 +3,7 @@ describe("The _on_socket_message private method", function () {
 	describe("gets called with an object having a data property (a string) as first argument and", function () {
 
 		it("should do nothing if data === {\"server_id\":\"0\"}", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var INIT_DDP_MESSAGE = "{\"server_id\":\"0\"}";
 			var obj = {
 				data: INIT_DDP_MESSAGE
@@ -15,7 +15,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("if EJSON is available, should try to parse data with EJSON.parse", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				data: ""
 			};
@@ -30,7 +30,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("if EJSON is not available, should try to parse data with JSON.parse", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				data: "{}"
 			};
@@ -43,7 +43,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("if EJSON is available, should console.warn the user if data does not parse with EJSON", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				data: "{ ] not_JSON"
 			};
@@ -60,7 +60,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("if EJSON is not available, should console.warn the user if data does not parse with JSON", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				data: "{ ] not_JSON"
 			};
@@ -71,7 +71,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("should console.warn the user if data.msg is not a DDP server message", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				data: JSON.stringify({
 					msg: "socket_open"
@@ -84,7 +84,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("should call the DDP[\"_on_\" + data.msg] method, passing the parsed data as first argument", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var data = {
 				msg: "added"
 			};

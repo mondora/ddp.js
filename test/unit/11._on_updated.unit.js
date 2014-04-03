@@ -3,7 +3,7 @@ describe("The _on_updated private method", function () {
 	describe("receives as only argument an object containing the property methods (an array of ids) and", function () {
 
 		it("it should call all of the _onUpdatedCallbacks[id] where id belongs to method", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				methods: ["0", "1", "2", "3"]
 			};
@@ -17,7 +17,7 @@ describe("The _on_updated private method", function () {
 		});
 
 		it("it should delete the _onUpdatedCallbacks[id]-s it calls after calling them", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				methods: ["0", "1", "2", "3"]
 			};
@@ -35,7 +35,7 @@ describe("The _on_updated private method", function () {
 		});
 
 		it("it should not call _onUpdatedCallbacks[id] if id belongs to method but _onUpdatedCallbacks[id] is undefined", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				methods: ["0", "1", "2", "3", "4"]
 			};

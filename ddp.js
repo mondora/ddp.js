@@ -17,17 +17,17 @@
 		"nosub", "ready", "removed", "result", "updated"
 	];
 
-    var DDP = function (endpoint, SocketConstructor, do_not_autoconnect, do_not_autoreconnect) {
-        this._endpoint = endpoint;
-        this._SocketConstructor = SocketConstructor;
-        this._autoreconnect = !do_not_autoreconnect;
+    var DDP = function (options) {
+        this._endpoint = options.endpoint;
+        this._SocketConstructor = options.SocketConstructor;
+        this._autoreconnect = !options.do_not_autoreconnect;
         this._onReadyCallbacks   = {};
         this._onResultCallbacks  = {};
         this._onUpdatedCallbacks = {};
         this._events = {};
 		this._reconnect_count = 0;
 		this._reconnect_incremental_timer = 0;
-        if (!do_not_autoconnect) this.connect();
+        if (!options.do_not_autoconnect) this.connect();
     };
     DDP.prototype.constructor = DDP;
 

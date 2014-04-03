@@ -5,7 +5,7 @@ describe("The _on_nosub private method", function () {
 		describe("if _onReadyCallbacks[id] exists", function () {
 
 			it("should call it with error as first argument", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {}
@@ -17,7 +17,7 @@ describe("The _on_nosub private method", function () {
 			});
 
 			it("should delete that reference to the function after calling it", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {}
@@ -34,7 +34,7 @@ describe("The _on_nosub private method", function () {
 		describe("if _onReadyCallbacks[id] doesn't exist", function () {
 
 			it("should throw an error", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {}

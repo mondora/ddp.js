@@ -29,11 +29,21 @@ describe("The library ddp.js", function () {
 
 });
 
+var optionsAutoconnect = {
+	endpoint: "",
+	SocketConstructor: SockJS
+};
+
+var optionsDontAutoconnect = {
+	endpoint: "",
+	SocketConstructor: SockJS,
+	do_not_autoconnect: true
+};
 
 describe("Instantiating a DDP instance", function () {
 
 	describe("should return an object with the following public methods:", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 
 		it("connect", function () {
 			_.isFunction(ddp.connect).should.be.true;
@@ -63,14 +73,14 @@ describe("Instantiating a DDP instance", function () {
 
 	it("should call the \"connect\" method if the third argument passed to the constructor is falsy", function () {
 		sinon.spy(DDP.prototype, "connect");
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		ddp.connect.called.should.be.true;
 		DDP.prototype.connect.restore();
 	});
 
 	it("should not call the \"connect\" method if the third argument passed to the constructor is truthy", function () {
 		sinon.spy(DDP.prototype, "connect");
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		ddp.connect.called.should.be.false;
 		DDP.prototype.connect.restore();
 	});

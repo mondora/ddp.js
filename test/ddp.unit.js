@@ -29,11 +29,21 @@ describe("The library ddp.js", function () {
 
 });
 
+var optionsAutoconnect = {
+	endpoint: "",
+	SocketConstructor: SockJS
+};
+
+var optionsDontAutoconnect = {
+	endpoint: "",
+	SocketConstructor: SockJS,
+	do_not_autoconnect: true
+};
 
 describe("Instantiating a DDP instance", function () {
 
 	describe("should return an object with the following public methods:", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 
 		it("connect", function () {
 			_.isFunction(ddp.connect).should.be.true;
@@ -63,14 +73,14 @@ describe("Instantiating a DDP instance", function () {
 
 	it("should call the \"connect\" method if the third argument passed to the constructor is falsy", function () {
 		sinon.spy(DDP.prototype, "connect");
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		ddp.connect.called.should.be.true;
 		DDP.prototype.connect.restore();
 	});
 
 	it("should not call the \"connect\" method if the third argument passed to the constructor is truthy", function () {
 		sinon.spy(DDP.prototype, "connect");
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		ddp.connect.called.should.be.false;
 		DDP.prototype.connect.restore();
 	});
@@ -80,7 +90,7 @@ describe("Instantiating a DDP instance", function () {
 describe("The connect method", function () {
 
 	it("should instanciate a new _SocketConstructor instance, calling _SocketConstructor with this._endpoint as sole argument", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		sinon.spy(ddp, "_SocketConstructor");
 		ddp.connect();
 		ddp._SocketConstructor.calledWith(ddp._endpoint).should.be.true;
@@ -88,12 +98,12 @@ describe("The connect method", function () {
 	});
 
 	it("should instanciate a new _SocketConstructor instance and sotre a reference to it in the _socket property", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		(ddp._socket instanceof ddp._SocketConstructor).should.be.true;
 	});
 
 	it("should register _on_socket_open as handler for the _socket \"open\" event", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		sinon.spy(ddp, "_on_socket_open");
 		ddp.connect();
 		ddp._on_socket_open();
@@ -102,7 +112,7 @@ describe("The connect method", function () {
 	});
 
 	it("should register _on_socket_close as handler for the _socket \"close\" event", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		sinon.spy(ddp, "_on_socket_close");
 		ddp.connect();
 		ddp._on_socket_close();
@@ -111,7 +121,7 @@ describe("The connect method", function () {
 	});
 
 	it("should register _on_socket_error as handler for the _socket \"error\" event", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		sinon.spy(ddp, "_on_socket_error");
 		ddp.connect();
 		ddp._on_socket_error();
@@ -122,7 +132,7 @@ describe("The connect method", function () {
 	it("should register _on_socket_message as handler for the _socket \"message\" event", function () {
 		var tmp = DDP.prototype._on_socket_message;
 		DDP.prototype._on_socket_message = sinon.spy();
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		ddp._on_socket_message();
 		ddp._on_socket_message.calledOn(ddp).should.be.true;
 		DDP.prototype._on_socket_message = tmp;
@@ -133,7 +143,7 @@ describe("The connect method", function () {
 describe("The method method", function () {
 
 	it("should send a \"method\" DDP message to the server", function (done) {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var ddpMethod = {
 			msg: "method",
 			method: "ok",
@@ -148,7 +158,7 @@ describe("The method method", function () {
 	});
 
 	it("should register its thrid argument as handler for the \"result\" event", function (done) {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var handler = function () {};
 		ddp.on("connected", function () {
 			ddp.method("method", [""], handler);
@@ -158,7 +168,7 @@ describe("The method method", function () {
 	});
 
 	it("should register its fourth argument as handler for the \"updated\" event", function (done) {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var handler = function () {};
 		ddp.on("connected", function () {
 			ddp.method("method", [""], null, handler);
@@ -172,7 +182,7 @@ describe("The method method", function () {
 describe("The sub method", function () {
 
 	it("should send a \"sub\" DDP message to the server", function (done) {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var ddpSub = {
 			msg: "sub",
 			name: "sub",
@@ -187,7 +197,7 @@ describe("The sub method", function () {
 	});
 
 	it("should register its thrid argument as handler for the \"ready\" and \"nosub\" events", function (done) {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var handler = function () {};
 		ddp.on("connected", function () {
 			ddp.sub("method", [""], handler);
@@ -201,7 +211,7 @@ describe("The sub method", function () {
 describe("The unsub method", function () {
 
 	it("should send an \"unsub\" DDP message to the server", function (done) {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var ddpUnsub = {
 			msg: "unsub",
 			id: "fake_sub_id"
@@ -219,7 +229,7 @@ describe("The unsub method", function () {
 describe("The on method", function () {
 
 	it("should register the function provided as second argument as a handler for the event provided as first argument", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var event = {
 			name: "name",
 			handler: function () {}
@@ -233,7 +243,7 @@ describe("The on method", function () {
 describe("The off method", function () {
 
 	it("should de-register the function provided as second argument as a handler for the event provided as first argument", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var event = {
 			name: "name",
 			handler: function () {}
@@ -249,7 +259,7 @@ describe("The off method", function () {
 describe("The _emit private method", function () {
 
 	it("should call all registered handlers on the event provided as first argument", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var event = {
 			name: "name",
 			handler: sinon.spy()
@@ -261,7 +271,7 @@ describe("The _emit private method", function () {
 	});
 
 	it("should proxy all arguments except the first to the handler", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		var event = {
 			name: "name",
 			handler: sinon.spy()
@@ -284,7 +294,7 @@ describe("The _emit private method", function () {
 describe("The _send private method", function () {
 
 	it("should stringify the first argument passed to it with EJSON if available", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		ddp._socket.send = _.noop;
 		var obj = {};
 		GLB.EJSON = {
@@ -296,7 +306,7 @@ describe("The _send private method", function () {
 	});
 
 	it("should stringify the first argument passed to it with JSON if EJSON is not available", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		ddp._socket.send = _.noop;
 		var obj = {};
 		var tmp = JSON.stringify;
@@ -307,7 +317,7 @@ describe("The _send private method", function () {
 	});
 
 	it("should call the _socket.send method with the stringified object as first argument", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		ddp._socket.send = sinon.spy();
 		var obj = {};
 		ddp._send(obj);
@@ -319,7 +329,7 @@ describe("The _send private method", function () {
 describe("The _try_reconnect private method", function () {
 
 	it("should increase _reconnect_counter by 1 each time it's called", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		ddp.connect = _.noop;
 		var currentCount = ddp._reconnect_count;
 		ddp._try_reconnect();
@@ -327,7 +337,7 @@ describe("The _try_reconnect private method", function () {
 	});
 
 	it("should increase _reconnect_incremental_timer by 500 each time it's called", function () {
-		var ddp = new DDP("", SockJS);
+		var ddp = new DDP(optionsAutoconnect);
 		ddp.connect = _.noop;
 		var currentTimer = ddp._reconnect_incremental_timer;
 		ddp._try_reconnect();
@@ -343,7 +353,7 @@ describe("The _on_result private method", function () {
 		describe("if _onResultCallbacks[id] exists", function () {
 
 			it("should call it, passing error and result as first and second arguments respectively", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {},
@@ -356,7 +366,7 @@ describe("The _on_result private method", function () {
 			});
 
 			it("should delete that reference to the function after calling it", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {},
@@ -369,7 +379,7 @@ describe("The _on_result private method", function () {
 			});
 
 			it("and if error is truthy, should delete the _onUpdatedCallbacks[id] after calling _onResultCallbacks[id]", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {},
@@ -387,7 +397,7 @@ describe("The _on_result private method", function () {
 		describe("if _onResultCallbacks[id] doesn't exist", function () {
 
 			it("should not throw an error if error is falsy", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					result: {}
@@ -398,7 +408,7 @@ describe("The _on_result private method", function () {
 			});
 
 			it("should throw an error if error is truthy", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {}
@@ -409,7 +419,7 @@ describe("The _on_result private method", function () {
 			});
 
 			it("should delete the _onUpdatedCallbacks[id] if error is truthy", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {},
@@ -433,7 +443,7 @@ describe("The _on_updated private method", function () {
 	describe("receives as only argument an object containing the property methods (an array of ids) and", function () {
 
 		it("it should call all of the _onUpdatedCallbacks[id] where id belongs to method", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				methods: ["0", "1", "2", "3"]
 			};
@@ -447,7 +457,7 @@ describe("The _on_updated private method", function () {
 		});
 
 		it("it should delete the _onUpdatedCallbacks[id]-s it calls after calling them", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				methods: ["0", "1", "2", "3"]
 			};
@@ -465,7 +475,7 @@ describe("The _on_updated private method", function () {
 		});
 
 		it("it should not call _onUpdatedCallbacks[id] if id belongs to method but _onUpdatedCallbacks[id] is undefined", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				methods: ["0", "1", "2", "3", "4"]
 			};
@@ -485,7 +495,7 @@ describe("The _on_nosub private method", function () {
 		describe("if _onReadyCallbacks[id] exists", function () {
 
 			it("should call it with error as first argument", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {}
@@ -497,7 +507,7 @@ describe("The _on_nosub private method", function () {
 			});
 
 			it("should delete that reference to the function after calling it", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {}
@@ -514,7 +524,7 @@ describe("The _on_nosub private method", function () {
 		describe("if _onReadyCallbacks[id] doesn't exist", function () {
 
 			it("should throw an error", function () {
-				var ddp = new DDP("", SockJS, true);
+				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {}
@@ -535,7 +545,7 @@ describe("The _on_ready private method", function () {
 	describe("receives as only argument an object containing the property subs (an array of ids) and", function () {
 
 		it("should call all of the _onReadyCallbacks[id] where id belongs to method", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				subs: ["0", "1", "2", "3"]
 			};
@@ -549,7 +559,7 @@ describe("The _on_ready private method", function () {
 		});
 
 		it("it should delete the _onReadyCallbacks[id]-s it calls after calling them", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				subs: ["0", "1", "2", "3"]
 			};
@@ -567,7 +577,7 @@ describe("The _on_ready private method", function () {
 		});
 
 		it("it should not call _onReadyCallbacks[id] if id belongs to subs but _onReadyCallbacks[id] is undefined", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				subs: ["0", "1", "2", "3", "4"]
 			};
@@ -583,7 +593,7 @@ describe("The _on_ready private method", function () {
 describe("The _on_error private method", function () {
 
 	it("should call the emit method, with \"error\" as the first argument and its first argument as second argument", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		var arg = {};
 		ddp._emit = sinon.spy();
 		ddp._on_error(arg);
@@ -595,7 +605,7 @@ describe("The _on_error private method", function () {
 describe("The _on_connected private method", function () {
 
 	it("should call the emit method, with \"connected\" as the first argument and its first argument as second argument", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		var arg = {};
 		ddp._emit = sinon.spy();
 		ddp._on_connected(arg);
@@ -603,7 +613,7 @@ describe("The _on_connected private method", function () {
 	});
 
 	it("should reset _reconnect_count and _reconnect_incremental_timer to 0", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		var arg = {};
         ddp._reconnect_count = 1;
         ddp._reconnect_incremental_timer = 1;
@@ -617,7 +627,7 @@ describe("The _on_connected private method", function () {
 describe("The _on_failed private method", function () {
 
 	it("should call the emit method, with \"failed\" as the first argument and its first argument as second argument", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		var arg = {};
 		ddp._emit = sinon.spy();
 		ddp._on_failed(arg);
@@ -629,7 +639,7 @@ describe("The _on_failed private method", function () {
 describe("The _on_added private method", function () {
 
 	it("should call the emit method, with \"added\" as the first argument and its first argument as second argument", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		var arg = {};
 		ddp._emit = sinon.spy();
 		ddp._on_added(arg);
@@ -641,7 +651,7 @@ describe("The _on_added private method", function () {
 describe("The _on_removed private method", function () {
 
 	it("should call the emit method, with \"removed\" as the first argument and its first argument as second argument", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		var arg = {};
 		ddp._emit = sinon.spy();
 		ddp._on_removed(arg);
@@ -653,7 +663,7 @@ describe("The _on_removed private method", function () {
 describe("The _on_changed private method", function () {
 
 	it("should call the emit method, with \"changed\" as the first argument and its first argument as second argument", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		var arg = {};
 		ddp._emit = sinon.spy();
 		ddp._on_changed(arg);
@@ -665,7 +675,7 @@ describe("The _on_changed private method", function () {
 describe("The _on_socket_close private method", function () {
 
 	it("should call the emit method, with \"socket_close\" as first argument", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		ddp._emit = sinon.spy();
 		ddp._try_reconnect = _.noop;
 		ddp._on_socket_close();
@@ -673,7 +683,7 @@ describe("The _on_socket_close private method", function () {
 	});
 
 	it("should call the _try_reconnect method if _autoreconnect is truthy", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		ddp._emit = _.noop;
 		ddp._try_reconnect = sinon.spy();
 		ddp._on_socket_close();
@@ -681,7 +691,7 @@ describe("The _on_socket_close private method", function () {
 	});
 
 	it("should not call the _try_reconnect method if _autoreconnect is falsy", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		ddp._autoreconnect = false;
 		ddp._emit = _.noop;
 		ddp._try_reconnect = sinon.spy();
@@ -694,7 +704,7 @@ describe("The _on_socket_close private method", function () {
 describe("The _on_socket_error private method", function () {
 
 	it("should call the emit method, with \"socket_error\" as first argument", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		ddp._emit = sinon.spy();
 		ddp._try_reconnect = _.noop;
 		ddp._on_socket_error();
@@ -702,7 +712,7 @@ describe("The _on_socket_error private method", function () {
 	});
 
 	it("should call the _try_reconnect method if _autoreconnect is truthy", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		ddp._emit = _.noop;
 		ddp._try_reconnect = sinon.spy();
 		ddp._on_socket_error();
@@ -710,7 +720,7 @@ describe("The _on_socket_error private method", function () {
 	});
 
 	it("should not call the _try_reconnect method if _autoreconnect is falsy", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		ddp._autoreconnect = false;
 		ddp._emit = _.noop;
 		ddp._try_reconnect = sinon.spy();
@@ -723,7 +733,7 @@ describe("The _on_socket_error private method", function () {
 describe("The _on_socket_open private method", function () {
 
 	it("should call the _send method with a DDP connect message object as first argument", function () {
-		var ddp = new DDP("", SockJS, true);
+		var ddp = new DDP(optionsDontAutoconnect);
 		var obj = {
             msg: "connect",
             version: "pre1",
@@ -741,7 +751,7 @@ describe("The _on_socket_message private method", function () {
 	describe("gets called with an object having a data property (a string) as first argument and", function () {
 
 		it("should do nothing if data === {\"server_id\":\"0\"}", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var INIT_DDP_MESSAGE = "{\"server_id\":\"0\"}";
 			var obj = {
 				data: INIT_DDP_MESSAGE
@@ -753,7 +763,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("if EJSON is available, should try to parse data with EJSON.parse", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				data: ""
 			};
@@ -768,7 +778,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("if EJSON is not available, should try to parse data with JSON.parse", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				data: "{}"
 			};
@@ -781,7 +791,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("if EJSON is available, should console.warn the user if data does not parse with EJSON", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				data: "{ ] not_JSON"
 			};
@@ -798,7 +808,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("if EJSON is not available, should console.warn the user if data does not parse with JSON", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				data: "{ ] not_JSON"
 			};
@@ -809,7 +819,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("should console.warn the user if data.msg is not a DDP server message", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var obj = {
 				data: JSON.stringify({
 					msg: "socket_open"
@@ -822,7 +832,7 @@ describe("The _on_socket_message private method", function () {
 		});
 
 		it("should call the DDP[\"_on_\" + data.msg] method, passing the parsed data as first argument", function () {
-			var ddp = new DDP("", SockJS, true);
+			var ddp = new DDP(optionsDontAutoconnect);
 			var data = {
 				msg: "added"
 			};
