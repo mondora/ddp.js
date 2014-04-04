@@ -1,8 +1,8 @@
 //    ddp.js v0.1.0
 //    <br />
-//    https://pscanf.github.io/ddp.js
+//    https://mondora.github.io/ddp.js
 //    <br />
-//    (c) 2014 Paolo Scanferla
+//    (c) 2014 Mondora Srl
 //    <br />
 //    ddp.js may be freely distributed under the MIT license.
 

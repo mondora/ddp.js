@@ -136,7 +136,7 @@
 		} else {
 			if (data.error) {
 				delete this._onUpdatedCallbacks[data.id];
-				throw new Error(data.error);
+				throw new Error(JSON.stringify(data.error));
 			}
 		}
     };

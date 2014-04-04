@@ -1,4 +1,2 @@
 node_modules/
 *.swp
-test/node_modules
-test/ddp.js

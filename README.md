@@ -12,18 +12,17 @@ The project was inspired by [ddp-browser-client](https://github.com/bmcmahen/ddp
 
 Clone the repository
 
-    git clone https://github.com/pscanf/ddp.js
+    git clone https://github.com/mondora/ddp.js
 	cd ddp.js
 
 Install dependencies
 
 	npm install
-	npm install -g gulp mocha
 
 Run tests
 
-	gulp test-node
-	gulp test-browser
+	npm run test-node
+	npm run test-browser
 
 
 ##API
