@@ -43,6 +43,7 @@
         this._endpoint = options.endpoint;
         this._SocketConstructor = options.SocketConstructor;
         this._autoreconnect = !options.do_not_autoreconnect;
+		this._debug = options.debug;
         this._onReadyCallbacks   = {};
         this._onResultCallbacks  = {};
         this._onUpdatedCallbacks = {};
@@ -154,7 +155,7 @@
 			this._onReadyCallbacks[data.id](data.error);
 			delete this._onReadyCallbacks[data.id];
 		} else {
-			throw new Error(data.error);
+			throw new Error(JSON.stringify(data.error));
 		}
     };
     DDP.prototype._on_ready = function (data) {
@@ -205,6 +206,7 @@
     };
     DDP.prototype._on_socket_message = function (message) {
         var data;
+		if (this._debug) console.log(message);
         if (message.data === INIT_DDP_MESSAGE) return;
         try {
             if (typeof EJSON === "undefined") {
