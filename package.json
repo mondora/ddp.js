@@ -1,6 +1,6 @@
 {
-  "name": "ddp",
-  "version": "0.3.0",
+  "name": "ddp.js",
+  "version": "0.3.1",
   "description": "ddp javascript client",
   "main": "ddp.js",
   "scripts": {
