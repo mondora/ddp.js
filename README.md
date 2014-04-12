@@ -2,24 +2,61 @@
 
 A javascript ddp client that runs both in the browser and in node.
 
-##WHY
+##Why
 
 This is the foundation of a project I'm working on to decouple meteor's client and server sides. It allows the to connect through ddp to a meteor server, and use all of the wonderful facilities meteor provides.
 
 The project was inspired by [ddp-browser-client](https://github.com/bmcmahen/ddp-browser-client), but I decided to re-implement the library from scratch to get a better understanding of the ddp protocol and to adapt it to run on node as well.
 
-##TESTS
+##Install
 
-Clone the repository
+You can install the package for server-side usage via npm:
+
+	npm install ddp.js
+
+For client-side usage, you can use bower:
+
+	bower install ddp.js
+
+or you can just clone the repository and add `ddp.js` to your project.
+
+
+##Example usage
+
+	var options = {
+		endpoint: "http://localhost:3000/websocket",
+		SocketConstructor: WebSocket
+	};
+	var ddp = new DDP(options);
+
+	ddp.on("connected", function () {
+		console.log("Connected");
+
+		ddp.sub("myCollection");
+		ddp.on("added", function (data) {
+			console.log(data.collection);
+		});
+
+		var myLoginParams = { ... };
+		ddp.method("login", [myLoginParams], function (err, res) {
+			if (err) throw err;
+			console.log("Logged in!");
+		});
+	});
+
+
+##Tests
+
+To run tests clone the repository
 
     git clone https://github.com/mondora/ddp.js
 	cd ddp.js
 
-Install dependencies
+install dependencies
 
 	npm install
 
-Run tests
+and run tests
 
 	npm run test-node
 	npm run test-browser
@@ -31,14 +68,16 @@ Run tests
 
 
 
-###new DDP(url, Socket, dontConnect, dontReconnect)
+###new DDP(options)
 
 Returns a new DDP instance.
 
-- `url`: the location of the websocket server. Its
+Available options are:
+
+- `endpoint`: the location of the websocket server. Its
   format depends on the type of socket you are using.
 
-- `Socket`: the constructor function that will be
+- `SocketConstructor`: the constructor function that will be
   used to construct the socket. Meteor (currently the only
   DDP server available) supports websockets and SockJS
   sockets.  So, practically speaking, this means that on the
@@ -48,12 +87,12 @@ Returns a new DDP instance.
   library implements the websocket protocol (e.g.
   faye-websocket).
 
-- `dontConnect`: pass true if you do not wish to have
+- `do_not_autoconnect`: pass true if you do not wish to have
   the DDP instance to automatically connect itself to the
   server upon instantiation.  In that case you'll need to
   explicitly call the connect method to do so.
 
-- `dontReconnect`: pass true if you do not wish to
+- `do_not_autoreconnect`: pass true if you do not wish to
   have the DDP instance try reconnecting itself.
 
 
