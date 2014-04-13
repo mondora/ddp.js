@@ -44,7 +44,7 @@ ddp.on("connected", function () {
 		console.log("Logged in!");
 	});
 });
-\```
+```
 
 ##Tests
 
