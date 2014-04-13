@@ -23,27 +23,28 @@ or you can just clone the repository and add `ddp.js` to your project.
 
 ##Example usage
 
-	var options = {
-		endpoint: "http://localhost:3000/websocket",
-		SocketConstructor: WebSocket
-	};
-	var ddp = new DDP(options);
+```javascript
+var options = {
+	endpoint: "http://localhost:3000/websocket",
+	SocketConstructor: WebSocket
+};
+var ddp = new DDP(options);
 
-	ddp.on("connected", function () {
-		console.log("Connected");
+ddp.on("connected", function () {
+	console.log("Connected");
 
-		ddp.sub("myCollection");
-		ddp.on("added", function (data) {
-			console.log(data.collection);
-		});
-
-		var myLoginParams = { ... };
-		ddp.method("login", [myLoginParams], function (err, res) {
-			if (err) throw err;
-			console.log("Logged in!");
-		});
+	ddp.sub("myCollection");
+	ddp.on("added", function (data) {
+		console.log(data.collection);
 	});
 
+	var myLoginParams = { ... };
+	ddp.method("login", [myLoginParams], function (err, res) {
+		if (err) throw err;
+		console.log("Logged in!");
+	});
+});
+\```
 
 ##Tests
 
