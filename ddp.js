@@ -115,7 +115,7 @@
 		} else {
 			if (data.error) {
 				delete this._onUpdatedCallbacks[data.id];
-				throw new Error(JSON.stringify(data.error));
+				throw data.error;
 			}
 		}
     };
@@ -130,17 +130,17 @@
     };
     DDP.prototype._on_nosub = function (data) {
 		if (this._onReadyCallbacks[data.id]) {
-			this._onReadyCallbacks[data.id](data.error);
+			this._onReadyCallbacks[data.id](data.error, data.id);
 			delete this._onReadyCallbacks[data.id];
 		} else {
-			throw new Error(JSON.stringify(data.error));
+			throw data.error;
 		}
     };
     DDP.prototype._on_ready = function (data) {
         var self = this;
         data.subs.forEach(function (id) {
 			if (self._onReadyCallbacks[id]) {
-				self._onReadyCallbacks[id]();
+				self._onReadyCallbacks[id](null, id);
 				delete self._onReadyCallbacks[id];
 			}
 		});
