@@ -109,6 +109,12 @@ socket connection to the server and delegates sending the
 message to the "onopen" event handler of the socket
 instance.
 
+`connect` also sets the readyState property of the DDP instance
+to 0 (connecting).
+If the user tries to send DDP messages before the connection
+is open (readyState equals 1), those messages get queued up
+and sent, in order, once the connection is established.
+
 
 
 
