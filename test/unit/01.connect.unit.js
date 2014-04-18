@@ -8,6 +8,12 @@ describe("The connect method", function () {
 		ddp._SocketConstructor.restore();
 	});
 
+	it("should set the readyState to 0", function () {
+		var ddp = new DDP(optionsDontAutoconnect);
+		ddp.connect();
+		ddp.readyState.should.equal(0);
+	});
+
 	it("should instanciate a new _SocketConstructor instance and sotre a reference to it in the _socket property", function () {
 		var ddp = new DDP(optionsAutoconnect);
 		(ddp._socket instanceof ddp._SocketConstructor).should.be.true;

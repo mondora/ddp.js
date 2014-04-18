@@ -34,6 +34,8 @@
         this._onResultCallbacks  = {};
         this._onUpdatedCallbacks = {};
         this._events = {};
+		this._queue = [];
+		this.readyState = -1;
 		this._reconnect_count = 0;
 		this._reconnect_incremental_timer = 0;
         if (!options.do_not_autoconnect) this.connect();
@@ -42,6 +44,7 @@
 
     DDP.prototype.connect = function () {
         this._socket = new this._SocketConstructor(this._endpoint);
+		this.readyState = 0;
         this._socket.onopen    = this._on_socket_open.bind(this);
         this._socket.onmessage = this._on_socket_message.bind(this);
         this._socket.onerror   = this._on_socket_error.bind(this);
@@ -98,6 +101,10 @@
     };
 
     DDP.prototype._send = function (object) {
+		if (this.readyState !== 1 && object.msg !== "connect") {
+			this._queue.push(object);
+			return;
+		}
         var message;
         if (typeof EJSON === "undefined") {
             message = JSON.stringify(object);
@@ -158,11 +165,17 @@
         this._emit("error", data);
     };
     DDP.prototype._on_connected = function (data) {
+		this.readyState = 1;
         this._reconnect_count = 0;
         this._reconnect_incremental_timer = 0;
         this._emit("connected", data);
+		var length = this._queue.length;
+		for (var i=0; i<length; i++) {
+			this._send(this._queue.shift());
+		}
     };
     DDP.prototype._on_failed = function (data) {
+		this.readyState = 4;
         this._emit("failed", data);
     };
     DDP.prototype._on_added = function (data) {
@@ -176,10 +189,12 @@
     };
 
     DDP.prototype._on_socket_close = function () {
+		this.readyState = 4;
         this._emit("socket_close");
         if (this._autoreconnect) this._try_reconnect();
     };
     DDP.prototype._on_socket_error = function (e) {
+		this.readyState = 4;
         this._emit("socket_error", e);
         if (this._autoreconnect) this._try_reconnect();
     };

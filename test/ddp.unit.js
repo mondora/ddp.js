@@ -107,6 +107,12 @@ describe("The connect method", function () {
 		ddp._SocketConstructor.restore();
 	});
 
+	it("should set the readyState to 0", function () {
+		var ddp = new DDP(optionsDontAutoconnect);
+		ddp.connect();
+		ddp.readyState.should.equal(0);
+	});
+
 	it("should instanciate a new _SocketConstructor instance and sotre a reference to it in the _socket property", function () {
 		var ddp = new DDP(optionsAutoconnect);
 		(ddp._socket instanceof ddp._SocketConstructor).should.be.true;
@@ -303,35 +309,53 @@ describe("The _emit private method", function () {
 
 describe("The _send private method", function () {
 
-	it("should stringify the first argument passed to it with EJSON if available", function () {
-		var ddp = new DDP(optionsAutoconnect);
-		ddp._socket.send = _.noop;
-		var obj = {};
-		GLB.EJSON = {
-			stringify: sinon.spy()
-		};
-		ddp._send(obj);
-		EJSON.stringify.calledWith(obj).should.be.true;
-		delete GLB.EJSON;
+	describe("if the \"readyState\" property of the DDP instance equals 1", function () {
+
+		it("should stringify the first argument passed to it with EJSON if available", function () {
+			var ddp = new DDP(optionsAutoconnect);
+			ddp._socket.send = _.noop;
+			ddp.readyState = 1;
+			var obj = {};
+			GLB.EJSON = {
+				stringify: sinon.spy()
+			};
+			ddp._send(obj);
+			EJSON.stringify.calledWith(obj).should.be.true;
+			delete GLB.EJSON;
+		});
+
+		it("should stringify the first argument passed to it with JSON if EJSON is not available", function () {
+			var ddp = new DDP(optionsAutoconnect);
+			ddp._socket.send = _.noop;
+			ddp.readyState = 1;
+			var obj = {};
+			var tmp = JSON.stringify;
+			JSON.stringify = sinon.spy();
+			ddp._send(obj);
+			JSON.stringify.calledWith(obj).should.be.true;
+			JSON.stringify = tmp;
+		});
+
+		it("should call the _socket.send method with the stringified object as first argument", function () {
+			var ddp = new DDP(optionsAutoconnect);
+			ddp._socket.send = sinon.spy();
+			ddp.readyState = 1;
+			var obj = {};
+			ddp._send(obj);
+			ddp._socket.send.calledWith("{}").should.be.true;
+		});
+
 	});
 
-	it("should stringify the first argument passed to it with JSON if EJSON is not available", function () {
-		var ddp = new DDP(optionsAutoconnect);
-		ddp._socket.send = _.noop;
-		var obj = {};
-		var tmp = JSON.stringify;
-		JSON.stringify = sinon.spy();
-		ddp._send(obj);
-		JSON.stringify.calledWith(obj).should.be.true;
-		JSON.stringify = tmp;
-	});
+	describe("if the \"readyState\" property of the DDP instance does not equal 1", function () {
 
-	it("should call the _socket.send method with the stringified object as first argument", function () {
-		var ddp = new DDP(optionsAutoconnect);
-		ddp._socket.send = sinon.spy();
-		var obj = {};
-		ddp._send(obj);
-		ddp._socket.send.calledWith("{}").should.be.true;
+		it("should add its first argument at the end of the \"_queue\" array", function () {
+			var ddp = new DDP(optionsAutoconnect);
+			ddp.readyState = 0;
+			var obj = {};
+			ddp._send(obj);
+			ddp._queue[ddp._queue.length - 1].should.equal(obj);
+		});
 	});
 
 });
@@ -624,12 +648,37 @@ describe("The _on_connected private method", function () {
 
 	it("should reset _reconnect_count and _reconnect_incremental_timer to 0", function () {
 		var ddp = new DDP(optionsDontAutoconnect);
-		var arg = {};
         ddp._reconnect_count = 1;
         ddp._reconnect_incremental_timer = 1;
-		ddp._on_connected(arg);
+		ddp._on_connected();
         ddp._reconnect_count.should.equal(0);
         ddp._reconnect_incremental_timer.should.equal(0);
+	});
+
+	it("should set the readyState to 1", function () {
+		var ddp = new DDP(optionsDontAutoconnect);
+		ddp._on_connected();
+		ddp.readyState.should.equal(1);
+	});
+
+	it("should send (calling the \"_send\" method) all queued messages in order", function () {
+		var ddp = new DDP(optionsDontAutoconnect);
+		ddp._queue = [0, 1, 2, 3];
+		var length = ddp._queue.length;
+		ddp._send = sinon.spy();
+		ddp._on_connected();
+		ddp._send.callCount.should.equal(length);
+		for (var i=0; i<length; i++) {
+			ddp._send.getCall(i).args[0].should.equal(i);
+		}
+	});
+
+	it("should empty the queue", function () {
+		var ddp = new DDP(optionsDontAutoconnect);
+		ddp._queue = [0, 1, 2, 3];
+		ddp._send = _.noop;
+		ddp._on_connected();
+		ddp._queue.length.should.equal(0);
 	});
 
 });
@@ -642,6 +691,12 @@ describe("The _on_failed private method", function () {
 		ddp._emit = sinon.spy();
 		ddp._on_failed(arg);
 		ddp._emit.calledWith("failed", arg).should.be.true;
+	});
+
+	it("should set the readyState to 4", function () {
+		var ddp = new DDP(optionsDontAutoconnect);
+		ddp._on_failed();
+		ddp.readyState.should.equal(4);
 	});
 
 });
@@ -692,6 +747,12 @@ describe("The _on_socket_close private method", function () {
 		ddp._emit.calledWith("socket_close").should.be.true;
 	});
 
+	it("should set the readyState to 4", function () {
+		var ddp = new DDP(optionsDontAutoconnect);
+		ddp._on_socket_close();
+		ddp.readyState.should.equal(4);
+	});
+
 	it("should call the _try_reconnect method if _autoreconnect is truthy", function () {
 		var ddp = new DDP(optionsDontAutoconnect);
 		ddp._emit = _.noop;
@@ -719,6 +780,12 @@ describe("The _on_socket_error private method", function () {
 		ddp._try_reconnect = _.noop;
 		ddp._on_socket_error();
 		ddp._emit.calledWith("socket_error").should.be.true;
+	});
+
+	it("should set the readyState to 4", function () {
+		var ddp = new DDP(optionsDontAutoconnect);
+		ddp._on_socket_error();
+		ddp.readyState.should.equal(4);
 	});
 
 	it("should call the _try_reconnect method if _autoreconnect is truthy", function () {

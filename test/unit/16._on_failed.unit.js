@@ -8,4 +8,10 @@ describe("The _on_failed private method", function () {
 		ddp._emit.calledWith("failed", arg).should.be.true;
 	});
 
+	it("should set the readyState to 4", function () {
+		var ddp = new DDP(optionsDontAutoconnect);
+		ddp._on_failed();
+		ddp.readyState.should.equal(4);
+	});
+
 });

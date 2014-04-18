@@ -8,6 +8,12 @@ describe("The _on_socket_close private method", function () {
 		ddp._emit.calledWith("socket_close").should.be.true;
 	});
 
+	it("should set the readyState to 4", function () {
+		var ddp = new DDP(optionsDontAutoconnect);
+		ddp._on_socket_close();
+		ddp.readyState.should.equal(4);
+	});
+
 	it("should call the _try_reconnect method if _autoreconnect is truthy", function () {
 		var ddp = new DDP(optionsDontAutoconnect);
 		ddp._emit = _.noop;
