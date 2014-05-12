@@ -22,7 +22,7 @@
     var TIMER_INCREMENT = 500;
 	var DDP_SERVER_MESSAGES = [
 		"added", "changed", "connected", "error", "failed",
-		"nosub", "ready", "removed", "result", "updated"
+		"nosub", "ready", "removed", "result", "updated", "ping"
 	];
 
     var DDP = function (options) {
@@ -30,7 +30,11 @@
         this._SocketConstructor = options.SocketConstructor;
         this._autoreconnect = !options.do_not_autoreconnect;
 		this._debug = options.debug;
+		// Subscriptions callbacks
         this._onReadyCallbacks   = {};
+        this._onStopCallbacks   = {};
+        this._onErrorCallbacks   = {};
+		// Methods callbacks
         this._onResultCallbacks  = {};
         this._onUpdatedCallbacks = {};
         this._events = {};
@@ -63,9 +67,11 @@
         });
     };
 
-    DDP.prototype.sub = function (name, params, onReady) {
+    DDP.prototype.sub = function (name, params, onReady, onStop, onError) {
         var id = uniqueId();
         this._onReadyCallbacks[id] = onReady;
+        this._onStopCallbacks[id] = onStop;
+        this._onErrorCallbacks[id] = onError;
         this._send({
             msg: "sub",
             id: id,
@@ -144,18 +150,30 @@
         });
     };
     DDP.prototype._on_nosub = function (data) {
-		if (this._onReadyCallbacks[data.id]) {
-			this._onReadyCallbacks[data.id](data.error, data.id);
+		if (data.error) {
+			if (!this._onErrorCallbacks[data.id]) {
+				delete this._onReadyCallbacks[data.id];
+				delete this._onStopCallbacks[data.id];
+				throw new Error(data.error);
+			}
+			this._onErrorCallbacks[data.id](data.error);
 			delete this._onReadyCallbacks[data.id];
-		} else {
-			throw data.error;
+			delete this._onStopCallbacks[data.id];
+			delete this._onErrorCallbacks[data.id];
+			return;
 		}
+		if (this._onStopCallbacks[data.id]) {
+			this._onStopCallbacks[data.id]();
+		}
+		delete this._onReadyCallbacks[data.id];
+		delete this._onStopCallbacks[data.id];
+		delete this._onErrorCallbacks[data.id];
     };
     DDP.prototype._on_ready = function (data) {
         var self = this;
         data.subs.forEach(function (id) {
 			if (self._onReadyCallbacks[id]) {
-				self._onReadyCallbacks[id](null, id);
+				self._onReadyCallbacks[id]();
 				delete self._onReadyCallbacks[id];
 			}
 		});
@@ -187,6 +205,12 @@
     DDP.prototype._on_changed = function (data) {
         this._emit("changed", data);
     };
+    DDP.prototype._on_ping = function (data) {
+        this._send({
+            msg: "pong",
+            id: data.id
+        });
+    };
 
     DDP.prototype._on_socket_close = function () {
 		this.readyState = 4;
@@ -201,8 +225,8 @@
     DDP.prototype._on_socket_open = function () {
         this._send({
             msg: "connect",
-            version: "pre1",
-            support: ["pre1"]
+            version: "pre2",
+            support: ["pre2"]
         });
     };
     DDP.prototype._on_socket_message = function (message) {
