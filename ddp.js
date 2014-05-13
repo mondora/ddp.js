@@ -185,14 +185,16 @@
         this._emit("error", data);
     };
     DDP.prototype._on_connected = function (data) {
+		var firstCon = this._reconnect_count === 0;
+		var eventName = firstCon ? "connected" : "reconnected";
 		this.readyState = 1;
         this._reconnect_count = 0;
         this._reconnect_incremental_timer = 0;
-        this._emit("connected", data);
 		var length = this._queue.length;
 		for (var i=0; i<length; i++) {
 			this._send(this._queue.shift());
 		}
+		this._emit(eventName, data);
     };
     DDP.prototype._on_failed = function (data) {
 		this.readyState = 4;

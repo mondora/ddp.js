@@ -707,12 +707,29 @@ describe("The _on_error private method", function () {
 
 describe("The _on_connected private method", function () {
 
-	it("should call the emit method, with \"connected\" as the first argument and its first argument as second argument", function () {
-		var ddp = new DDP(optionsDontAutoconnect);
-		var arg = {};
-		ddp._emit = sinon.spy();
-		ddp._on_connected(arg);
-		ddp._emit.calledWith("connected", arg).should.be.true;
+	describe("if this is a first connection", function () {
+
+		it("should call the emit method, with \"connected\" as the first argument and its first argument as second argument", function () {
+			var ddp = new DDP(optionsDontAutoconnect);
+			var arg = {};
+			ddp._emit = sinon.spy();
+			ddp._on_connected(arg);
+			ddp._emit.calledWith("connected", arg).should.be.true;
+		});
+
+	});
+
+	describe("if this is a reconnection", function () {
+
+		it("should call the emit method, with \"reconnected\" as the first argument and its first argument as second argument", function () {
+			var ddp = new DDP(optionsDontAutoconnect);
+			var arg = {};
+			ddp._emit = sinon.spy();
+			ddp._reconnect_count = 1;
+			ddp._on_connected(arg);
+			ddp._emit.calledWith("reconnected", arg).should.be.true;
+		});
+
 	});
 
 	it("should reset _reconnect_count and _reconnect_incremental_timer to 0", function () {
