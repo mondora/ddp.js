@@ -212,12 +212,24 @@ describe("The sub method", function () {
 		});
 	});
 
-	it("should register its thrid argument as handler for the \"ready\" and \"nosub\" events", function (done) {
+	it("should register its thrid argument as handler for the \"ready\" event", function (done) {
 		var ddp = new DDP(optionsAutoconnect);
 		var handler = function () {};
 		ddp.on("connected", function () {
 			ddp.sub("method", [""], handler);
 			_.contains(ddp._onReadyCallbacks, handler).should.be.true;
+			done();
+		});
+	});
+
+	it("should register its fourth and fifth arguments as handlers for the \"nosub\" event", function (done) {
+		var ddp = new DDP(optionsAutoconnect);
+		var onStop = function () {};
+		var onError = function () {};
+		ddp.on("connected", function () {
+			ddp.sub("method", [""], null, onStop, onError);
+			_.contains(ddp._onStopCallbacks, onStop).should.be.true;
+			_.contains(ddp._onErrorCallbacks, onError).should.be.true;
 			done();
 		});
 	});
@@ -524,48 +536,85 @@ describe("The _on_updated private method", function () {
 
 describe("The _on_nosub private method", function () {
 
-	describe("receives as only argument an object containing the properties id and error, and", function () {
+	describe("receives as only argument an object containing the properties id and an optional error, and", function () {
 
-		describe("if _onReadyCallbacks[id] exists", function () {
+		describe("if error is defined", function () {
 
-			it("should call it with error as first argument", function () {
-				var ddp = new DDP(optionsDontAutoconnect);
-				var obj = {
-					id: "0",
-					error: {}
-				};
-				var cb = sinon.spy();
-				ddp._onReadyCallbacks[0] = cb;
-				ddp._on_nosub(obj);
-				cb.calledWith(obj.error).should.be.true;
+			describe("if an error handler exists", function () {
+
+				it("should call the error handler with error as first argument", function () {
+					var ddp = new DDP(optionsDontAutoconnect);
+					var obj = {
+						id: "0",
+						error: {}
+					};
+					var cb = sinon.spy();
+					ddp._onErrorCallbacks[0] = cb;
+					ddp._on_nosub(obj);
+					cb.calledWith(obj.error).should.be.true;
+				});
+
 			});
 
-			it("should delete that reference to the function after calling it", function () {
+			describe("if an error handler doesn't exist", function () {
+
+				it("should throw the error", function () {
+					var ddp = new DDP(optionsDontAutoconnect);
+					var obj = {
+						id: "0",
+						error: {}
+					};
+					var cb = sinon.spy();
+					var troublemaker = function () {
+						ddp._on_nosub(obj);
+					};
+					troublemaker.should.throw(obj.error);
+				});
+
+			});
+
+			it("should delete all handlers for the subscription", function () {
 				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
 					id: "0",
 					error: {}
 				};
-				var cb = sinon.spy();
-				ddp._onReadyCallbacks[0] = cb;
+				ddp._onReadyCallbacks[0] = _.noop;
+				ddp._onStopCallbacks[0] = _.noop;
+				ddp._onErrorCallbacks[0] = _.noop;
 				ddp._on_nosub(obj);
-				cb.calledWith(obj.error).should.be.true;
 				_.isUndefined(ddp._onReadyCallbacks[0]).should.be.true;
+				_.isUndefined(ddp._onStopCallbacks[0]).should.be.true;
+				_.isUndefined(ddp._onErrorCallbacks[0]).should.be.true;
 			});
 
 		});
 
-		describe("if _onReadyCallbacks[id] doesn't exist", function () {
+		describe("if error is not defined", function () {
 
-			it("should throw an error", function () {
+			it("should call the stop handler", function () {
 				var ddp = new DDP(optionsDontAutoconnect);
 				var obj = {
-					id: "0",
-					error: {}
+					id: "0"
 				};
-				(function () {
-					ddp._on_nosub(obj);
-				}).should.throw(obj.error);
+				var cb = sinon.spy();
+				ddp._onStopCallbacks[0] = cb;
+				ddp._on_nosub(obj);
+				cb.called.should.be.true;
+			});
+
+			it("should delete all handlers for the subscription", function () {
+				var ddp = new DDP(optionsDontAutoconnect);
+				var obj = {
+					id: "0"
+				};
+				ddp._onReadyCallbacks[0] = _.noop;
+				ddp._onStopCallbacks[0] = _.noop;
+				ddp._onErrorCallbacks[0] = _.noop;
+				ddp._on_nosub(obj);
+				_.isUndefined(ddp._onReadyCallbacks[0]).should.be.true;
+				_.isUndefined(ddp._onStopCallbacks[0]).should.be.true;
+				_.isUndefined(ddp._onErrorCallbacks[0]).should.be.true;
 			});
 
 		});
@@ -813,8 +862,8 @@ describe("The _on_socket_open private method", function () {
 		var ddp = new DDP(optionsDontAutoconnect);
 		var obj = {
             msg: "connect",
-            version: "pre1",
-            support: ["pre1"]
+            version: "pre2",
+            support: ["pre2"]
 		};
 		ddp._send = sinon.spy();
 		ddp._on_socket_open();
