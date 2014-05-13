@@ -65,6 +65,7 @@
             method: name,
             params: params
         });
+		return id;
     };
 
     DDP.prototype.sub = function (name, params, onReady, onStop, onError) {
@@ -78,6 +79,7 @@
             name: name,
             params: params
         });
+		return id;
     };
 
     DDP.prototype.unsub = function (id) {

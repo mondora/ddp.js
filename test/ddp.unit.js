@@ -193,6 +193,16 @@ describe("The method method", function () {
 		});
 	});
 
+	it("should return the id of the method", function (done) {
+		var ddp = new DDP(optionsAutoconnect);
+		var handler = function () {};
+		ddp.on("connected", function () {
+			var id = ddp.method("method", [""], handler);
+			ddp._onResultCallbacks[id].should.equal(handler);
+			done();
+		});
+	});
+
 });
 
 describe("The sub method", function () {
@@ -214,10 +224,10 @@ describe("The sub method", function () {
 
 	it("should register its thrid argument as handler for the \"ready\" event", function (done) {
 		var ddp = new DDP(optionsAutoconnect);
-		var handler = function () {};
+		var onReady = function () {};
 		ddp.on("connected", function () {
-			ddp.sub("method", [""], handler);
-			_.contains(ddp._onReadyCallbacks, handler).should.be.true;
+			ddp.sub("method", [""], onReady);
+			_.contains(ddp._onReadyCallbacks, onReady).should.be.true;
 			done();
 		});
 	});
@@ -230,6 +240,16 @@ describe("The sub method", function () {
 			ddp.sub("method", [""], null, onStop, onError);
 			_.contains(ddp._onStopCallbacks, onStop).should.be.true;
 			_.contains(ddp._onErrorCallbacks, onError).should.be.true;
+			done();
+		});
+	});
+
+	it("should return the id of the subscription", function (done) {
+		var ddp = new DDP(optionsAutoconnect);
+		var onReady = function () {};
+		ddp.on("connected", function () {
+			var id = ddp.sub("method", [""], onReady);
+			ddp._onReadyCallbacks[id].should.equal(onReady);
 			done();
 		});
 	});

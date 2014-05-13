@@ -35,4 +35,14 @@ describe("The method method", function () {
 		});
 	});
 
+	it("should return the id of the method", function (done) {
+		var ddp = new DDP(optionsAutoconnect);
+		var handler = function () {};
+		ddp.on("connected", function () {
+			var id = ddp.method("method", [""], handler);
+			ddp._onResultCallbacks[id].should.equal(handler);
+			done();
+		});
+	});
+
 });
