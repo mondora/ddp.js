@@ -47,8 +47,8 @@
     DDP.prototype.constructor = DDP;
 
     DDP.prototype.connect = function () {
-        this._socket = new this._SocketConstructor(this._endpoint);
 		this.readyState = 0;
+        this._socket = new this._SocketConstructor(this._endpoint);
         this._socket.onopen    = this._on_socket_open.bind(this);
         this._socket.onmessage = this._on_socket_message.bind(this);
         this._socket.onerror   = this._on_socket_error.bind(this);
@@ -224,7 +224,6 @@
     DDP.prototype._on_socket_error = function (e) {
 		this.readyState = 4;
         this._emit("socket_error", e);
-        if (this._autoreconnect) this._try_reconnect();
     };
     DDP.prototype._on_socket_open = function () {
         this._send({
