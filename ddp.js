@@ -229,8 +229,8 @@
     DDP.prototype._on_socket_open = function () {
         this._send({
             msg: "connect",
-            version: "pre2",
-            support: ["pre2"]
+            version: "pre1",
+            support: ["pre1"]
         });
     };
     DDP.prototype._on_socket_message = function (message) {
