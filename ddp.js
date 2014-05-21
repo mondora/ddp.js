@@ -211,7 +211,7 @@
 		}
 		self._emit(eventName, data);
 		// Set up keepalive ping-s
-		self._ping_interval_handle = setTimeout(function () {
+		self._ping_interval_handle = setInterval(function () {
 			var id = uniqueId();
 			self._send({
 				msg: "ping",
@@ -243,11 +243,13 @@
 	};
 
 	DDP.prototype._on_socket_close = function () {
+		clearInterval(this._ping_interval_handle);
 		this.readyState = 4;
 		this._emit("socket_close");
 		if (this._autoreconnect) this._try_reconnect();
 	};
 	DDP.prototype._on_socket_error = function (e) {
+		clearInterval(this._ping_interval_handle);
 		this.readyState = 4;
 		this._emit("socket_error", e);
 	};
