@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mondora/ddp.js.svg?branch=master)](https://travis-ci.org/mondora/ddp.js)
+
 #ddp.js
 
 A javascript ddp client that runs both in the browser and in node.

@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/mondora/ddp.js",
   "devDependencies": {
+    "coveralls": "^2.10.0",
     "gulp": "^3.6.2",
     "gulp-concat": "^2.2.0",
     "karma": "^0.12.14",
@@ -32,6 +33,7 @@
     "karma-safari-launcher": "^0.1.1",
     "lodash": "^2.4.1",
     "mocha": "^1.18.2",
+    "mocha-lcov-reporter": "0.0.1",
     "should": "^3.2.0-beta1",
     "sinon": "^1.9.0"
   },
