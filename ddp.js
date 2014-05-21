@@ -20,28 +20,39 @@
     var INIT_DDP_MESSAGE = "{\"server_id\":\"0\"}";
     var MAX_RECONNECT_ATTEMPTS = 10;
     var TIMER_INCREMENT = 500;
+	var DEFAULT_PING_INTERVAL = 10000;
 	var DDP_SERVER_MESSAGES = [
 		"added", "changed", "connected", "error", "failed",
-		"nosub", "ready", "removed", "result", "updated", "ping"
+		"nosub", "ready", "removed", "result", "updated",
+		"ping", "pong"
 	];
 
     var DDP = function (options) {
+
+		// Configuration
         this._endpoint = options.endpoint;
         this._SocketConstructor = options.SocketConstructor;
         this._autoreconnect = !options.do_not_autoreconnect;
+		this._ping_interval = options._ping_interval || DEFAULT_PING_INTERVAL;
 		this._debug = options.debug;
+
 		// Subscriptions callbacks
         this._onReadyCallbacks   = {};
         this._onStopCallbacks   = {};
         this._onErrorCallbacks   = {};
+
 		// Methods callbacks
         this._onResultCallbacks  = {};
         this._onUpdatedCallbacks = {};
         this._events = {};
 		this._queue = [];
+
+		// Setup
 		this.readyState = -1;
 		this._reconnect_count = 0;
 		this._reconnect_incremental_timer = 0;
+
+		// Init
         if (!options.do_not_autoconnect) this.connect();
     };
     DDP.prototype.constructor = DDP;
@@ -119,6 +130,9 @@
         } else {
             message = EJSON.stringify(object);
         }
+		if (this._debug) {
+			console.log(message);
+		}
         this._socket.send(message);
     };
 
@@ -185,16 +199,25 @@
         this._emit("error", data);
     };
     DDP.prototype._on_connected = function (data) {
-		var firstCon = this._reconnect_count === 0;
+		var self = this;
+		var firstCon = self._reconnect_count === 0;
 		var eventName = firstCon ? "connected" : "reconnected";
-		this.readyState = 1;
-        this._reconnect_count = 0;
-        this._reconnect_incremental_timer = 0;
-		var length = this._queue.length;
+		self.readyState = 1;
+        self._reconnect_count = 0;
+        self._reconnect_incremental_timer = 0;
+		var length = self._queue.length;
 		for (var i=0; i<length; i++) {
-			this._send(this._queue.shift());
+			self._send(self._queue.shift());
 		}
-		this._emit(eventName, data);
+		self._emit(eventName, data);
+		// Set up keepalive ping-s
+		self._ping_interval_handle = setTimeout(function () {
+			var id = uniqueId();
+			self._send({
+				msg: "ping",
+				id: id
+			});
+		}, self._ping_interval);
     };
     DDP.prototype._on_failed = function (data) {
 		this.readyState = 4;
@@ -214,6 +237,9 @@
             msg: "pong",
             id: data.id
         });
+    };
+    DDP.prototype._on_pong = function (data) {
+		// For now, do nothing.
     };
 
     DDP.prototype._on_socket_close = function () {
