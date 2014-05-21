@@ -4,6 +4,7 @@
   "description": "ddp javascript client",
   "main": "ddp.js",
   "scripts": {
+    "test": "npm run test-node && npm run test-browser",
     "test-node": "./node_modules/mocha/bin/mocha -R nyan ./test/ddp.unit.js",
     "test-browser": "./node_modules/karma/bin/karma start test/karma.conf.js"
   },
