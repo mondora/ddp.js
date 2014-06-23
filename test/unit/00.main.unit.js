@@ -5,7 +5,7 @@ if (typeof window === "undefined") {
 	GLB.sinon = require("sinon");
 	GLB.should = require("should");
 	GLB.SockJS = require("./mocks/sockjs.js");
-	GLB.DDP = require("../ddp.js");
+	GLB.DDP = require("../src/ddp.js");
 } else {
 	ENV = "browser";
 	GLB = window;

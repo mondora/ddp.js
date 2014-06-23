@@ -15,11 +15,11 @@ module.exports = function(config) {
 
 		// list of files / patterns to load in the browser
 		files: [
-			"node_modules/sinon/pkg/sinon-1.9.1.js",
+			"node_modules/sinon/pkg/sinon-1.10.2.js",
 			"node_modules/should/should.js",
 			"node_modules/lodash/dist/lodash.compat.js",
 			"test/mocks/sockjs.js",
-			"ddp.js",
+			"src/ddp.js",
 			"test/ddp.unit.js"
 		],
 
@@ -32,7 +32,7 @@ module.exports = function(config) {
 		// preprocess matching files before serving them to the browser
 		// available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
 		preprocessors: {
-			"ddp.js": "coverage"
+			"src/ddp.js": "coverage"
 		},
 
 

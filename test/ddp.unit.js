@@ -5,7 +5,7 @@ if (typeof window === "undefined") {
 	GLB.sinon = require("sinon");
 	GLB.should = require("should");
 	GLB.SockJS = require("./mocks/sockjs.js");
-	GLB.DDP = require("../ddp.js");
+	GLB.DDP = require("../src/ddp.js");
 } else {
 	ENV = "browser";
 	GLB = window;
@@ -394,7 +394,7 @@ describe("The _send private method", function () {
 
 describe("The _try_reconnect private method", function () {
 
-	it("should increase _reconnect_counter by 1 each time it's called", function () {
+	it("should increase _reconnect_counter by 1 each time it's called, for the first ten times", function () {
 		var ddp = new DDP(optionsAutoconnect);
 		ddp.connect = _.noop;
 		var currentCount = ddp._reconnect_count;
@@ -402,12 +402,32 @@ describe("The _try_reconnect private method", function () {
 		ddp._reconnect_count.should.equal(currentCount + 1);
 	});
 
-	it("should increase _reconnect_incremental_timer by 500 each time it's called", function () {
+	it("and after time 10, it should not", function () {
+		var ddp = new DDP(optionsAutoconnect);
+		ddp.connect = _.noop;
+		var currentCount = ddp._reconnect_count;
+		for (var i=0; i<100; i++) {
+			ddp._try_reconnect();
+		}
+		ddp._reconnect_count.should.equal(10);
+	});
+
+	it("should increase _reconnect_incremental_timer by 300 each time it's called, for the first ten times", function () {
 		var ddp = new DDP(optionsAutoconnect);
 		ddp.connect = _.noop;
 		var currentTimer = ddp._reconnect_incremental_timer;
 		ddp._try_reconnect();
-		ddp._reconnect_incremental_timer.should.equal(currentTimer + 500);
+		ddp._reconnect_incremental_timer.should.equal(currentTimer + 300);
+	});
+
+	it("and after time 10, it should plateau at 16500", function () {
+		var ddp = new DDP(optionsAutoconnect);
+		ddp.connect = _.noop;
+		var currentTimer = ddp._reconnect_incremental_timer;
+		for (var i=0; i<100; i++) {
+			ddp._try_reconnect();
+		}
+		ddp._reconnect_incremental_timer.should.equal(16500);
 	});
 
 });
@@ -882,8 +902,8 @@ describe("The _on_socket_open private method", function () {
 		var ddp = new DDP(optionsDontAutoconnect);
 		var obj = {
             msg: "connect",
-            version: "pre1",
-            support: ["pre1"]
+            version: "pre2",
+            support: ["pre2"]
 		};
 		ddp._send = sinon.spy();
 		ddp._on_socket_open();
