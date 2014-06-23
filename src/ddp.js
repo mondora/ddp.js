@@ -18,8 +18,10 @@
 	})();
 
 	var INIT_DDP_MESSAGE = "{\"server_id\":\"0\"}";
-	var MAX_RECONNECT_ATTEMPTS = 10;
-	var TIMER_INCREMENT = 500;
+	// After hitting the plateau, it'll try to reconnect
+	// every 16.5 seconds
+	var RECONNECT_ATTEMPTS_BEFORE_PLATEAU = 10;
+	var TIMER_INCREMENT = 300;
 	var DEFAULT_PING_INTERVAL = 10000;
 	var DDP_SERVER_MESSAGES = [
 		"added", "changed", "connected", "error", "failed",
@@ -28,32 +30,29 @@
 	];
 
 	var DDP = function (options) {
-
 		// Configuration
 		this._endpoint = options.endpoint;
 		this._SocketConstructor = options.SocketConstructor;
 		this._autoreconnect = !options.do_not_autoreconnect;
 		this._ping_interval = options._ping_interval || DEFAULT_PING_INTERVAL;
 		this._debug = options.debug;
-
 		// Subscriptions callbacks
 		this._onReadyCallbacks   = {};
 		this._onStopCallbacks   = {};
 		this._onErrorCallbacks   = {};
-
 		// Methods callbacks
 		this._onResultCallbacks  = {};
 		this._onUpdatedCallbacks = {};
 		this._events = {};
 		this._queue = [];
-
 		// Setup
 		this.readyState = -1;
 		this._reconnect_count = 0;
 		this._reconnect_incremental_timer = 0;
-
 		// Init
-		if (!options.do_not_autoconnect) this.connect();
+		if (!options.do_not_autoconnect) {
+			this.connect();
+		}
 	};
 	DDP.prototype.constructor = DDP;
 
@@ -98,6 +97,7 @@
 			msg: "unsub",
 			id: id
 		});
+		return id;
 	};
 
 	DDP.prototype.on = function (name, handler) {
@@ -106,12 +106,19 @@
 	};
 
 	DDP.prototype.off = function (name, handler) {
-		if (!this._events[name]) return;
-		this._events[name].splice(this._events[name].indexOf(handler), 1);
+		if (!this._events[name]) {
+			return;
+		}
+		var index = this._events[name].indexOf(handler);
+		if (index !== -1) {
+			this._events[name].splice(index, 1);
+		}
 	};
 
 	DDP.prototype._emit = function (name /* , arguments */) {
-		if (!this._events[name]) return;
+		if (!this._events[name]) {
+			return;
+		}
 		var args = arguments;
 		var self = this;
 		this._events[name].forEach(function (handler) {
@@ -137,18 +144,22 @@
 	};
 
 	DDP.prototype._try_reconnect = function () {
-		if (this._reconnect_count < MAX_RECONNECT_ATTEMPTS) {
+		if (this._reconnect_count < RECONNECT_ATTEMPTS_BEFORE_PLATEAU) {
+			setTimeout(this.connect.bind(this), this._reconnect_incremental_timer);
+			this._reconnect_count += 1;
+			this._reconnect_incremental_timer += TIMER_INCREMENT * this._reconnect_count;
+		} else {
 			setTimeout(this.connect.bind(this), this._reconnect_incremental_timer);
 		}
-		this._reconnect_count += 1;
-		this._reconnect_incremental_timer += TIMER_INCREMENT * this._reconnect_count;
 	};
 
 	DDP.prototype._on_result = function (data) {
 		if (this._onResultCallbacks[data.id]) {
 			this._onResultCallbacks[data.id](data.error, data.result);
 			delete this._onResultCallbacks[data.id];
-			if (data.error) delete this._onUpdatedCallbacks[data.id];
+			if (data.error) {
+				delete this._onUpdatedCallbacks[data.id];
+			}
 		} else {
 			if (data.error) {
 				delete this._onUpdatedCallbacks[data.id];
@@ -240,13 +251,16 @@
 	};
 	DDP.prototype._on_pong = function (data) {
 		// For now, do nothing.
+		// In the future we might want to log latency or so.
 	};
 
 	DDP.prototype._on_socket_close = function () {
 		clearInterval(this._ping_interval_handle);
 		this.readyState = 4;
 		this._emit("socket_close");
-		if (this._autoreconnect) this._try_reconnect();
+		if (this._autoreconnect) {
+			this._try_reconnect();
+		}
 	};
 	DDP.prototype._on_socket_error = function (e) {
 		clearInterval(this._ping_interval_handle);
@@ -256,21 +270,27 @@
 	DDP.prototype._on_socket_open = function () {
 		this._send({
 			msg: "connect",
-			version: "pre1",
-			support: ["pre1"]
+			version: "pre2",
+			support: ["pre2"]
 		});
 	};
 	DDP.prototype._on_socket_message = function (message) {
 		var data;
-		if (this._debug) console.log(message);
-		if (message.data === INIT_DDP_MESSAGE) return;
+		if (this._debug) {
+			console.log(message);
+		}
+		if (message.data === INIT_DDP_MESSAGE) {
+			return;
+		}
 		try {
 			if (typeof EJSON === "undefined") {
 				data = JSON.parse(message.data);
 			} else {
 				data = EJSON.parse(message.data);
 			}
-			if (DDP_SERVER_MESSAGES.indexOf(data.msg) === -1) throw new Error();
+			if (DDP_SERVER_MESSAGES.indexOf(data.msg) === -1) {
+				throw new Error();
+			}
 		} catch (e) {
 			console.warn("Non DDP message received:");
 			console.warn(message.data);
