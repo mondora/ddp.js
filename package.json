@@ -1,8 +1,8 @@
 {
   "name": "ddp.js",
-  "version": "0.4.5",
+  "version": "0.5.0",
   "description": "ddp javascript client",
-  "main": "ddp.js",
+  "main": "src/ddp.js",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha ./test/ddp.unit.js",
     "test-node": "./node_modules/mocha/bin/mocha -R nyan ./test/ddp.unit.js",
@@ -13,7 +13,9 @@
     "url": "https://github.com/mondora/ddp.js"
   },
   "keywords": [
-    "ddp"
+    "ddp",
+	"meteor",
+	"asteroid"
   ],
   "author": "Paolo Scanferla <paolo.scanferla@mondora.com> (https://github.com/pscanf)",
   "license": "MIT",

@@ -35,7 +35,7 @@
 		this._SocketConstructor = options.SocketConstructor;
 		this._autoreconnect = !options.do_not_autoreconnect;
 		this._ping_interval = options._ping_interval || DEFAULT_PING_INTERVAL;
-		this._debug = options.debug;
+		this._socketInterceptFunction = options.socketInterceptFunction;
 		// Subscriptions callbacks
 		this._onReadyCallbacks   = {};
 		this._onStopCallbacks   = {};
@@ -137,8 +137,12 @@
 		} else {
 			message = EJSON.stringify(object);
 		}
-		if (this._debug) {
-			console.log(message);
+		if (this._socketInterceptFunction) {
+			this._socketInterceptFunction({
+				type: "socket_message_sent",
+				message: message,
+				timestamp: Date.now()
+			});
 		}
 		this._socket.send(message);
 	};
@@ -255,6 +259,12 @@
 	};
 
 	DDP.prototype._on_socket_close = function () {
+		if (this._socketInterceptFunction) {
+			this._socketInterceptFunction({
+				type: "socket_close",
+				timestamp: Date.now()
+			});
+		}
 		clearInterval(this._ping_interval_handle);
 		this.readyState = 4;
 		this._emit("socket_close");
@@ -263,11 +273,24 @@
 		}
 	};
 	DDP.prototype._on_socket_error = function (e) {
+		if (this._socketInterceptFunction) {
+			this._socketInterceptFunction({
+				type: "socket_error",
+				error: JSON.stringify(e),
+				timestamp: Date.now()
+			});
+		}
 		clearInterval(this._ping_interval_handle);
 		this.readyState = 4;
 		this._emit("socket_error", e);
 	};
 	DDP.prototype._on_socket_open = function () {
+		if (this._socketInterceptFunction) {
+			this._socketInterceptFunction({
+				type: "socket_open",
+				timestamp: Date.now()
+			});
+		}
 		this._send({
 			msg: "connect",
 			version: "pre2",
@@ -275,10 +298,14 @@
 		});
 	};
 	DDP.prototype._on_socket_message = function (message) {
-		var data;
-		if (this._debug) {
-			console.log(message);
+		if (this._socketInterceptFunction) {
+			this._socketInterceptFunction({
+				type: "socket_message_received",
+				message: message.data,
+				timestamp: Date.now()
+			});
 		}
+		var data;
 		if (message.data === INIT_DDP_MESSAGE) {
 			return;
 		}
