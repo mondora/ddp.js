@@ -4,8 +4,8 @@ describe("The _on_socket_open private method", function () {
 		var ddp = new DDP(optionsDontAutoconnect);
 		var obj = {
             msg: "connect",
-            version: "pre2",
-            support: ["pre2"]
+            version: "1",
+            support: ["1"]
 		};
 		ddp._send = sinon.spy();
 		ddp._on_socket_open();

@@ -28,6 +28,7 @@
 		"nosub", "ready", "removed", "result", "updated",
 		"ping", "pong"
 	];
+	var DDP_VERSION = "1";
 
 	var DDP = function (options) {
 		// Configuration
@@ -59,10 +60,10 @@
 	DDP.prototype.connect = function () {
 		this.readyState = 0;
 		this._socket = new this._SocketConstructor(this._endpoint);
-		this._socket.onopen	= this._on_socket_open.bind(this);
+		this._socket.onopen = this._on_socket_open.bind(this);
 		this._socket.onmessage = this._on_socket_message.bind(this);
-		this._socket.onerror   = this._on_socket_error.bind(this);
-		this._socket.onclose   = this._on_socket_close.bind(this);
+		this._socket.onerror = this._on_socket_error.bind(this);
+		this._socket.onclose = this._on_socket_close.bind(this);
 	};
 
 	DDP.prototype.method = function (name, params, onResult, onUpdated) {
@@ -293,8 +294,8 @@
 		}
 		this._send({
 			msg: "connect",
-			version: "pre2",
-			support: ["pre2"]
+			version: DDP_VERSION,
+			support: [DDP_VERSION]
 		});
 	};
 	DDP.prototype._on_socket_message = function (message) {
