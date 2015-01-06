@@ -21,7 +21,12 @@
     "url": "https://github.com/mondora/ddp.js/issues"
   },
   "homepage": "https://github.com/mondora/ddp.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "gulp": "^3.8.10",
+    "gulp-coverage": "^0.3.32",
+    "gulp-mocha": "^2.0.0",
+    "gulp-util": "^3.0.1"
+  },
   "dependencies": {
     "wolfy87-eventemitter": "^4.2.11"
   }

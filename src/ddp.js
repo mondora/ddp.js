@@ -9,11 +9,22 @@ var DDP = function (options) {
     // _socket is a facade for the _rawSocket, exposing a more consistent
     // event api
     this._socket = new EventEmitter();
-    this._registerSocketHandlers();
     // Init
-    this._establishRawSocketConnection();
+    this._init();
 };
 DDP.prototype = Object.create(EventEmitter.prototype);
 DDP.prototype.constructor = DDP;
+
+// Register methods
+require("./methods.js").forEach(function (tuple) {
+    DDP.prototype[tuple[0]] = tuple[1];
+});
+
+// Default steps
+DDP.prototype._initSteps = [
+    require("./socket-connection.js"),
+    require("./public-events.js"),
+    require("./ping-pong.js")
+];
 
 module.exports = DDP;
