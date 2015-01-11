@@ -13,7 +13,7 @@ describe("The socket-connection module", function () {
 });
 
 describe("The socketConnection function", function () {
-    it("should attach a the _rawSocket object to its context", function () {
+    it("should attach a _rawSocket object to its context", function () {
         var ctx = {
             _SocketConstructor: function () {
                 // Do nothing

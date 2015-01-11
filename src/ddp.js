@@ -6,38 +6,23 @@ var DDP = function (options) {
     // Configuration
     this._endpoint          = options.endpoint;
     this._SocketConstructor = options.SocketConstructor;
-    // _socket is a facade for the _rawSocket, exposing a more consistent
-    // event api
-    this._socket = new EventEmitter();
     // Init
     this._init();
 };
 DDP.prototype = Object.create(EventEmitter.prototype);
 DDP.prototype.constructor = DDP;
 
-DDP.prototype._initSteps = [
-    require("./ddp-connection.js"),
-    require("./public-events.js"),
-    require("./ping-pong.js"),
-    require("./socket-connection.js")
-];
-
 DDP.prototype._init = function () {
-    this._initSteps.forEach((function (step) {
-        step.call(this);
-    }).bind(this));
-};
-
-DDP.prototype._send = function (object) {
-    var message = JSON.stringify(object);
-    this._rawSocket.send(message);
-    // Emit a copy of the object, as we don't know who might be listening
-    this._socket.emit("message:out", JSON.parse(message));
+    require("./socket-proxy.js").call(this);
+    require("./ddp-connection.js").call(this);
+    require("./public-events.js").call(this);
+    require("./ping-pong.js").call(this);
+    require("./socket-connection.js").call(this);
 };
 
 DDP.prototype.connect = function () {
     var c = require("./lib/constants.js");
-    this._send({
+    this._socket.send({
         msg: "connect",
         version: c.DDP_VERSION,
         support: [c.DDP_VERSION]
@@ -46,7 +31,7 @@ DDP.prototype.connect = function () {
 
 DDP.prototype.method = function (name, params) {
     var id = require("./lib/utils.js").uniqueId();
-    this._send({
+    this._socket.send({
         msg: "method",
         id: id,
         method: name,
@@ -57,7 +42,7 @@ DDP.prototype.method = function (name, params) {
 
 DDP.prototype.ping = function () {
     var id = require("./lib/utils.js").uniqueId();
-    this._send({
+    this._socket.send({
         msg: "ping",
         id: id
     });
@@ -65,7 +50,7 @@ DDP.prototype.ping = function () {
 };
 
 DDP.prototype.pong = function (id) {
-    this._send({
+    this._socket.send({
         msg: "pong",
         id: id
     });
@@ -74,7 +59,7 @@ DDP.prototype.pong = function (id) {
 
 DDP.prototype.sub = function (name, params) {
     var id = require("./lib/utils.js").uniqueId();
-    this._send({
+    this._socket.send({
         msg: "sub",
         id: id,
         name: name,
@@ -84,7 +69,7 @@ DDP.prototype.sub = function (name, params) {
 };
 
 DDP.prototype.unsub = function (id) {
-    this._send({
+    this._socket.send({
         msg: "unsub",
         id: id
     });
