@@ -2,216 +2,179 @@
 [![Coverage Status](https://coveralls.io/repos/mondora/ddp.js/badge.png)](https://coveralls.io/r/mondora/ddp.js)
 [![Code Climate](https://codeclimate.com/github/mondora/ddp.js.png)](https://codeclimate.com/github/mondora/ddp.js)
 
+#WARNING
+Breaking changes from 0.6.x to 1.0.0, [read the
+CHANGELOG](https://github.com/mondora/ddp.js/blob/master/CHANGELOG.md) for more
+info.
+
 #ddp.js
 
-A javascript ddp client that runs both in the browser and in node.
+A javascript isomorphic ddp client.
 
-##Why
+##What is it for?
 
-This is the foundation of a project I'm working on to decouple meteor's client and server sides. It allows the to connect through ddp to a meteor server, and use all of the wonderful facilities meteor provides.
+The purpose of this library is:
 
-The project was inspired by [ddp-browser-client](https://github.com/bmcmahen/ddp-browser-client), but I decided to re-implement the library from scratch to get a better understanding of the ddp protocol and to adapt it to run on node as well.
+- to set up and maintain a ddp connection with a ddp server, freeing the
+  developer from having to do it on their own
+- to give the developer a clear, consistent API to communicate with the ddp
+  server
 
 ##Install
 
-You can install the package for server-side usage via npm:
+Via npm
 
-	npm install ddp.js
+    npm install ddp.js
 
-For client-side usage, you can use bower:
+Or via bower
 
-	bower install ddp.js
-
-or you can just clone the repository and add `ddp.js` to your project.
-
+    bower install ddp.js
 
 ##Example usage
 
 ```javascript
+var DDP = require("ddp.js");
 var options = {
-	endpoint: "http://localhost:3000/websocket",
-	SocketConstructor: WebSocket
+    endpoint: "http://localhost:3000/websocket",
+    SocketConstructor: WebSocket
 };
 var ddp = new DDP(options);
 
 ddp.on("connected", function () {
-	console.log("Connected");
+    console.log("Connected");
 
-	ddp.sub("myCollection");
-	ddp.on("added", function (data) {
-		console.log(data.collection);
-	});
+    var subId = ddp.sub("myCollection");
+    ddp.on("ready", function (message) {
+        if (message.id === subId) {
+            console.log("Subscruption to myCollection ready");
+        }
+    });
+    ddp.on("added", function (message) {
+        console.log(message.collection);
+    });
 
-	var myLoginParams = { ... };
-	ddp.method("login", [myLoginParams], function (err, res) {
-		if (err) throw err;
-		console.log("Logged in!");
-	});
+    var myLoginParams = {
+        user: {
+            email: "user@example.com"
+        },
+        password: "hunter2"
+    };
+    var methodId = ddp.method("login", [myLoginParams]);
+    ddp.on("result", function (message) {
+        if (message.id === methodId && !message.error) {
+            console.log("Logged in!");
+        }
+    });
 });
 ```
 
 ##Tests
 
-To run tests clone the repository
+`npm test` to run tests, `npm run coverage` to generate the coverage report.
 
-    git clone https://github.com/mondora/ddp.js
-	cd ddp.js
-
-install dependencies
-
-	npm install
-
-and run tests
-
-	npm run test-node
-	npm run test-browser
-
-
-##API
-
-
-
-
+##Public API
 
 ###new DDP(options)
 
-Returns a new DDP instance.
+Creates a new DDP instance. After being constructed, the instance will
+establish a connection with the DDP server and will try to maintain it open.
+
+####Arguments
+
+- `options` **object** *required*
 
 Available options are:
 
-- `endpoint`: the location of the websocket server. Its
+- `endpoint` **string** *required*: the location of the websocket server. Its
   format depends on the type of socket you are using.
 
-- `SocketConstructor`: the constructor function that will be
-  used to construct the socket. Meteor (currently the only
-  DDP server available) supports websockets and SockJS
-  sockets.  So, practically speaking, this means that on the
-  browser you can use either the browser's native WebSocket
-  constructor or the SockJS constructor provided by the
-  SockJS library.  On the server you can use whichever
-  library implements the websocket protocol (e.g.
-  faye-websocket).
+- `SocketConstructor` **function** *required*: the constructor function that
+  will be used to construct the socket. Meteor (currently the only DDP server
+  available) supports websockets and SockJS sockets.  So, practically speaking,
+  this means that on the browser you can use either the browser's native
+  WebSocket constructor or the SockJS constructor provided by the SockJS
+  library.  On the server you can use whichever library implements the
+  websocket protocol (e.g.  faye-websocket).
 
-- `do_not_autoconnect`: pass true if you do not wish to have
-  the DDP instance to automatically connect itself to the
-  server upon instantiation.  In that case you'll need to
-  explicitly call the connect method to do so.
+####Returns
 
-- `do_not_autoreconnect`: pass true if you do not wish to
-  have the DDP instance try reconnecting itself.
+A new DDP instance, which is also an `EventEmitter` instance.
 
+---
 
+###DDP.method(name, params)
 
+Calls a remote method.
 
+####Arguments
 
-###DDP.connect()
+- `name` **string** *required*: name of the method to call.
 
-Tries to connect to the DDP server.  To connect to a DDP
-server a "connect" message needs to be sent.  This function
-does not send the message itself.  Instead, it opens a
-socket connection to the server and delegates sending the
-message to the "onopen" event handler of the socket
-instance.
+- `params` **array** *required*: parameters to pass to the remote method. Pass
+  an empty array if you do not wish to pass any parameters.
 
-`connect` also sets the readyState property of the DDP instance
-to 0 (connecting).
-If the user tries to send DDP messages before the connection
-is open (readyState equals 1), those messages get queued up
-and sent, in order, once the connection is established.
+####Returns
 
+The unique `id` (string) corresponding to the method call.
 
+---
 
+###DDP.sub(name, params)
 
+Subscribes to a server publication.
 
-###DDP.method(name, params, onResult, onUpdated)
+####Arguments
 
-Calls a remote method and registers callbacks for the
-"result" and "updated" responses.
+- `name` **string** *required*: name of the server publication.
 
-- `name`: name of the method to call.
+- `params` **array** *required*: parameters to pass to the server publish
+  function. Pass an empty array if you do not wish to pass any parameters.
 
-- `params`: parameters to pass to the remote method. Pass an
-  empty array if you do not wish to pass any parameters.
+####Returns
 
-- `onResult`: callback for the "result" message
-  corresponding to the method invocation.
+The unique `id` (string) corresponding to the subscription call.
 
-- `onUpdated`: callback for the "updated" message
-  corresponding to the method invocation.
-
-
-
-
-
-###DDP.sub(name, params, onReady)
-
-Subscribes the current DDP instance to a server publication.
-
-- `name`: name of the server publication.
-
-- `params`: parameters to pass to the server publish
-  function. Pass an empty array if you do not wish to pass
-  any parameters.
-
-- `onReady`: callback for the "ready" message corresponding
-  to this subscription.
-
-
-
-
+---
 
 ###DDP.unsub(id)
 
-Unsubscribes the current DDP instance to a server
-publication to which it was subscribed.
+Unsubscribes to a previously-subscribed server publication.
 
-- `id`: id of the subscription.
+####Arguments
 
+- `id` **string** *required*: id of the subscription.
 
+####Returns
 
+The `id` corresponding to the subscription call (not of much use, but I return
+it for consistency).
 
+##Public events
 
-###DDP.on(name, handler)
+###Connection events
 
-Registers a callback for the specified event. Built-in
-events are: connected, failed, error, added, removed,
-changed, socket_close, socket_error.
+- `connected`: emitted with no arguments when the DDP connection is
+  established.
 
-- `name`: name of the event.
+- `disconnected`: emitted with no arguments when the DDP connection drops.
 
-- `handler`: handler for the event.
+###Subscription events
 
+All the following events are emitted with one argument, the parsed DDP message.
+Further details can be found [on the DDP spec
+page](https://github.com/meteor/meteor/blob/devel/packages/ddp/DDP.md).
 
+- `ready`
+- `nosub`
+- `added`
+- `changed`
+- `removed`
 
+###Method events
 
+All the following events are emitted with one argument, the parsed DDP message.
+Further details can be found [on the DDP spec
+page](https://github.com/meteor/meteor/blob/devel/packages/ddp/DDP.md).
 
-###DDP.off(name, handler)
-
-Deregisters a previously registered callback for the
-specified event.
-
-- `name`: name of the event.
-
-- `handler`: handler for the event.
-
-
-
-
-
-##DDP events
-
-###"error"
-
-###"connected"
-
-###"failed"
-
-###"socket_close"
-
-###"socket_error"
-
-###"added"
-
-###"changed"
-
-###"removed"
+- `result`
+- `updated`
