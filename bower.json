@@ -1,12 +1,12 @@
 {
   "name": "ddp.js",
-  "main": "src/ddp.js",
-  "version": "0.6.0",
+  "main": "dist/ddp.js",
+  "version": "1.0.0-rc0",
   "homepage": "https://github.com/mondora/ddp.js",
   "authors": [
     "Paolo Scanferla <paolo.scanferla@mondora.com>"
   ],
-  "description": "A ddp client for the browser.",
+  "description": "ddp javascript client",
   "moduleType": [
     "globals",
     "node"
