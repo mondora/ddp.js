@@ -1,6 +1,5 @@
 [![Build Status](https://travis-ci.org/mondora/ddp.js.svg?branch=master)](https://travis-ci.org/mondora/ddp.js)
 [![Coverage Status](https://coveralls.io/repos/mondora/ddp.js/badge.png)](https://coveralls.io/r/mondora/ddp.js)
-[![Code Climate](https://codeclimate.com/github/mondora/ddp.js.png)](https://codeclimate.com/github/mondora/ddp.js)
 
 #WARNING
 Breaking changes from 0.6.x to 1.0.0, [read the
