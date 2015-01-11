@@ -4,9 +4,8 @@
 
 "use strict";
 
-var u = require("./lib/utils.js");
-
 module.exports = function () {
+    var u = require("./lib/utils.js");
     this._socket.on("message:in", (function (message) {
         var msgs = [
             // Subscription messages

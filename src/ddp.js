@@ -22,9 +22,10 @@ require("./methods.js").forEach(function (tuple) {
 
 // Default steps
 DDP.prototype._initSteps = [
-    require("./socket-connection.js"),
+    require("./ddp-connection.js"),
     require("./public-events.js"),
-    require("./ping-pong.js")
+    require("./ping-pong.js"),
+    require("./socket-connection.js")
 ];
 
 module.exports = DDP;

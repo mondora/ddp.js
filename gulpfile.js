@@ -15,6 +15,12 @@ gulp.task("coverage", function () {
         .pipe(gulp.dest("test/coverage"));
 });
 
-gulp.task("default", ["coverage"], function () {
-    gulp.watch(["app/**/*.js", "test/**/*.js"], ["coverage"]);
+gulp.task("test", function () {
+    return gulp.src("test/**/*.js")
+        .pipe(mocha())
+        .on("error", gutil.log);
+});
+
+gulp.task("default", ["test"], function () {
+    gulp.watch(["app/**/*.js", "test/**/*.js"], ["test"]);
 });
