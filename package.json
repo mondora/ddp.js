@@ -4,7 +4,7 @@
   "description": "ddp javascript client",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/gulp/bin/gulp.js test"
+    "test": "./node_modules/mocha/bin/_mocha"
   },
   "repository": {
     "type": "git",
@@ -22,10 +22,9 @@
   },
   "homepage": "https://github.com/mondora/ddp.js",
   "devDependencies": {
-    "gulp": "^3.8.10",
-    "gulp-coverage": "^0.3.32",
-    "gulp-mocha": "^2.0.0",
-    "gulp-util": "^3.0.1",
+    "coveralls": "^2.11.2",
+    "istanbul": "^0.3.5",
+    "mocha": "^2.1.0",
     "should": "^4.4.2",
     "sinon": "^1.12.2"
   },
