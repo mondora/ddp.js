@@ -2,6 +2,11 @@
 [![Coverage Status](https://coveralls.io/repos/mondora/ddp.js/badge.png)](https://coveralls.io/r/mondora/ddp.js)
 [![Code Climate](https://codeclimate.com/github/mondora/ddp.js.png)](https://codeclimate.com/github/mondora/ddp.js)
 
+#WARNING
+Breaking changes from 0.6.x to 1.0.0, [read the
+CHANGELOG](https://github.com/mondora/ddp.js/blob/master/CHANGELOG.md) for more
+info.
+
 #ddp.js
 
 A javascript isomorphic ddp client.
