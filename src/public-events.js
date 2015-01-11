@@ -5,7 +5,6 @@
 "use strict";
 
 module.exports = function () {
-    var u = require("./lib/utils.js");
     this._socket.on("message:in", (function (message) {
         var msgs = [
             // Subscription messages
@@ -18,7 +17,7 @@ module.exports = function () {
             "result",
             "updated"
         ];
-        if (u.contains(msgs, message.msg)) {
+        if (require("./lib/utils.js").contains(msgs, message.msg)) {
             this.emit(message.msg, message);
         }
     }).bind(this));
