@@ -53,38 +53,23 @@ var DDP =
 	    // Configuration
 	    this._endpoint          = options.endpoint;
 	    this._SocketConstructor = options.SocketConstructor;
-	    // _socket is a facade for the _rawSocket, exposing a more consistent
-	    // event api
-	    this._socket = new EventEmitter();
 	    // Init
 	    this._init();
 	};
 	DDP.prototype = Object.create(EventEmitter.prototype);
 	DDP.prototype.constructor = DDP;
 
-	DDP.prototype._initSteps = [
-	    __webpack_require__(2),
-	    __webpack_require__(3),
-	    __webpack_require__(4),
-	    __webpack_require__(5)
-	];
-
 	DDP.prototype._init = function () {
-	    this._initSteps.forEach((function (step) {
-	        step.call(this);
-	    }).bind(this));
-	};
-
-	DDP.prototype._send = function (object) {
-	    var message = JSON.stringify(object);
-	    this._rawSocket.send(message);
-	    // Emit a copy of the object, as we don't know who might be listening
-	    this._socket.emit("message:out", JSON.parse(message));
+	    __webpack_require__(2).call(this);
+	    __webpack_require__(3).call(this);
+	    __webpack_require__(4).call(this);
+	    __webpack_require__(5).call(this);
+	    __webpack_require__(6).call(this);
 	};
 
 	DDP.prototype.connect = function () {
-	    var c = __webpack_require__(6);
-	    this._send({
+	    var c = __webpack_require__(7);
+	    this._socket.send({
 	        msg: "connect",
 	        version: c.DDP_VERSION,
 	        support: [c.DDP_VERSION]
@@ -92,8 +77,8 @@ var DDP =
 	};
 
 	DDP.prototype.method = function (name, params) {
-	    var id = __webpack_require__(7).uniqueId();
-	    this._send({
+	    var id = __webpack_require__(8).uniqueId();
+	    this._socket.send({
 	        msg: "method",
 	        id: id,
 	        method: name,
@@ -103,8 +88,8 @@ var DDP =
 	};
 
 	DDP.prototype.ping = function () {
-	    var id = __webpack_require__(7).uniqueId();
-	    this._send({
+	    var id = __webpack_require__(8).uniqueId();
+	    this._socket.send({
 	        msg: "ping",
 	        id: id
 	    });
@@ -112,7 +97,7 @@ var DDP =
 	};
 
 	DDP.prototype.pong = function (id) {
-	    this._send({
+	    this._socket.send({
 	        msg: "pong",
 	        id: id
 	    });
@@ -120,8 +105,8 @@ var DDP =
 	};
 
 	DDP.prototype.sub = function (name, params) {
-	    var id = __webpack_require__(7).uniqueId();
-	    this._send({
+	    var id = __webpack_require__(8).uniqueId();
+	    this._socket.send({
 	        msg: "sub",
 	        id: id,
 	        name: name,
@@ -131,7 +116,7 @@ var DDP =
 	};
 
 	DDP.prototype.unsub = function (id) {
-	    this._send({
+	    this._socket.send({
 	        msg: "unsub",
 	        id: id
 	    });
@@ -149,6 +134,30 @@ var DDP =
 
 /***/ },
 /* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	*   Set up the _socket proxy
+	*/
+
+	"use strict";
+
+	module.exports = function () {
+	    // _socket is a proxy for the _rawSocket, with the purpose of exposing a
+	    // more consistent event api
+	    var EventEmitter = __webpack_require__(1);
+	    this._socket = new EventEmitter();
+	    this._socket.send = (function (object) {
+	        var message = JSON.stringify(object);
+	        this._rawSocket.send(message);
+	        // Emit a copy of the object, as we don't know who might be listening
+	        this._socket.emit("message:out", JSON.parse(message));
+	    }).bind(this);
+	};
+
+
+/***/ },
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -170,8 +179,8 @@ var DDP =
 	        // connection, and try reconnecting after a timeout
 	        this.emit("disconnected");
 	        setTimeout(
-	            __webpack_require__(5).bind(this),
-	            __webpack_require__(6).RECONNECT_INTERVAL
+	            __webpack_require__(6).bind(this),
+	            __webpack_require__(7).RECONNECT_INTERVAL
 	        );
 	    }).bind(this));
 	    this._socket.on("message:in", (function (message) {
@@ -185,7 +194,7 @@ var DDP =
 
 
 /***/ },
-/* 3 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -207,7 +216,7 @@ var DDP =
 	            "result",
 	            "updated"
 	        ];
-	        if (__webpack_require__(7).contains(msgs, message.msg)) {
+	        if (__webpack_require__(8).contains(msgs, message.msg)) {
 	            this.emit(message.msg, message);
 	        }
 	    }).bind(this));
@@ -215,7 +224,7 @@ var DDP =
 
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -234,7 +243,7 @@ var DDP =
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -267,7 +276,7 @@ var DDP =
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -280,7 +289,7 @@ var DDP =
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
