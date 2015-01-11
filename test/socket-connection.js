@@ -23,7 +23,7 @@ describe("The socketConnection function", function () {
         socketConnection.call(ctx);
         ctx._rawSocket.should.be.instanceOf(ctx._SocketConstructor);
     });
-    it("should register handlers for the _rawSocket events", function () {
+    it("should register handlers for _rawSocket events", function () {
         var ctx = {
             _SocketConstructor: function () {
                 // Do nothing
@@ -38,7 +38,7 @@ describe("The socketConnection function", function () {
     });
 });
 
-describe("The _rawSocket open event", function () {
+describe("A _rawSocket open event", function () {
     it("should trigger a _socket open event", function () {
         var ctx = {
             _SocketConstructor: function () {
@@ -54,7 +54,7 @@ describe("The _rawSocket open event", function () {
     });
 });
 
-describe("The _rawSocket close event", function () {
+describe("A _rawSocket close event", function () {
     it("should trigger a _socket close event", function () {
         var ctx = {
             _SocketConstructor: function () {
@@ -70,7 +70,7 @@ describe("The _rawSocket close event", function () {
     });
 });
 
-describe("The _rawSocket error event", function () {
+describe("A _rawSocket error event", function () {
     it("should trigger a _socket error event", function () {
         var ctx = {
             _SocketConstructor: function () {
@@ -86,7 +86,7 @@ describe("The _rawSocket error event", function () {
     });
 });
 
-describe("The _rawSocket message event", function () {
+describe("A _rawSocket message event", function () {
     it("should trigger a _socket message:in event if the message is well-formed JSON", function () {
         var ctx = {
             _SocketConstructor: function () {
