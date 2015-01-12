@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/mondora/ddp.js.svg?branch=master)](https://travis-ci.org/mondora/ddp.js)
-[![Coverage Status](https://coveralls.io/repos/mondora/ddp.js/badge.png)](https://coveralls.io/r/mondora/ddp.js)
+[![Coverage Status](https://img.shields.io/coveralls/mondora/ddp.js.svg)](https://coveralls.io/r/mondora/ddp.js?branch=master)
 [![Dependency Status](https://david-dm.org/mondora/ddp.js.svg)](https://david-dm.org/mondora/ddp.js)
 [![devDependency Status](https://david-dm.org/mondora/ddp.js/dev-status.svg)](https://david-dm.org/mondora/ddp.js#info=devDependencies)
 
