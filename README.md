@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/mondora/ddp.js.svg?branch=master)](https://travis-ci.org/mondora/ddp.js)
 [![Coverage Status](https://coveralls.io/repos/mondora/ddp.js/badge.png)](https://coveralls.io/r/mondora/ddp.js)
-[![Dependency Status](https://david-dm.org/jshint/jshint.svg)](https://david-dm.org/mondora/ddp.js)
-[![devDependency Status](https://david-dm.org/jshint/jshint/dev-status.svg)](https://david-dm.org/mondora/ddp.js#info=devDependencies)  
+[![Dependency Status](https://david-dm.org/mondora/ddp.js.svg)](https://david-dm.org/mondora/ddp.js)
+[![devDependency Status](https://david-dm.org/mondora/ddp.js/dev-status.svg)](https://david-dm.org/mondora/ddp.js#info=devDependencies)
 
 #WARNING
 Breaking changes from 0.6.x to 1.0.0, [read the
