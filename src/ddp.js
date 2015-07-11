@@ -1,5 +1,3 @@
-"use strict";
-
 var EventEmitter = require("wolfy87-eventemitter");
 
 var DDP = function (options) {

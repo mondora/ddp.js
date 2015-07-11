@@ -1,5 +1,3 @@
-"use strict";
-
 var uniqueId = (function () {
     var i = 0;
     return function () {

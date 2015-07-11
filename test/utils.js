@@ -1,5 +1,3 @@
-"use strict";
-
 require("should");
 
 var u = require("../src/lib/utils.js");

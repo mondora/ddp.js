@@ -5,8 +5,8 @@
   "main": "src/ddp.js",
   "scripts": {
     "build": "./node_modules/.bin/webpack",
-    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha",
-    "test": "./node_modules/.bin/_mocha"
+    "test": "./node_modules/.bin/_mocha",
+    "dev": "./node_modules/.bin/gulp"
   },
   "repository": {
     "type": "git",
@@ -25,11 +25,16 @@
   "homepage": "https://github.com/mondora/ddp.js",
   "devDependencies": {
     "coveralls": "^2.11.2",
-    "istanbul": "^0.3.5",
-    "mocha": "^2.1.0",
-    "should": "^4.4.2",
-    "sinon": "^1.12.2",
-    "webpack": "^1.4.15"
+    "eslint": "^0.24.1",
+    "gulp": "^3.9.0",
+    "gulp-eslint": "^0.15.0",
+    "gulp-spawn-mocha": "^2.2.1",
+    "istanbul": "^0.3.17",
+    "mocha": "^2.2.5",
+    "node-libs-browser": "^0.5.2",
+    "should": "^7.0.2",
+    "sinon": "^1.15.4",
+    "webpack": "^1.10.1"
   },
   "dependencies": {
     "wolfy87-eventemitter": "^4.2.11"

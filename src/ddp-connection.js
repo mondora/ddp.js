@@ -2,8 +2,6 @@
 *   Maintain a DDP connection with the server
 */
 
-"use strict";
-
 module.exports = function () {
     // Register handlers for the `_socket` events that are responsible for
     // establishing and maintaining the DDP connection

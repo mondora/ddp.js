@@ -2,8 +2,6 @@
 *   Set up the _socket proxy
 */
 
-"use strict";
-
 module.exports = function () {
     // _socket is a proxy for the _rawSocket, with the purpose of exposing a
     // more consistent event api

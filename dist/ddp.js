@@ -2,41 +2,41 @@ var DDP =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-/******/
+
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-/******/
+
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-/******/
+
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
 /******/ 			loaded: false
 /******/ 		};
-/******/
+
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
+
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-/******/
+
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/
-/******/
+
+
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-/******/
+
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-/******/
+
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-/******/
+
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
 /******/ })
@@ -45,9 +45,7 @@ var DDP =
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
-
-	var EventEmitter = __webpack_require__(1);
+	var EventEmitter = __webpack_require__(2);
 
 	var DDP = function (options) {
 	    // Configuration
@@ -60,15 +58,15 @@ var DDP =
 	DDP.prototype.constructor = DDP;
 
 	DDP.prototype._init = function () {
-	    __webpack_require__(2).call(this);
 	    __webpack_require__(3).call(this);
 	    __webpack_require__(4).call(this);
-	    __webpack_require__(5).call(this);
 	    __webpack_require__(6).call(this);
+	    __webpack_require__(8).call(this);
+	    __webpack_require__(1).call(this);
 	};
 
 	DDP.prototype.connect = function () {
-	    var c = __webpack_require__(7);
+	    var c = __webpack_require__(5);
 	    this._socket.send({
 	        msg: "connect",
 	        version: c.DDP_VERSION,
@@ -77,7 +75,7 @@ var DDP =
 	};
 
 	DDP.prototype.method = function (name, params) {
-	    var id = __webpack_require__(8).uniqueId();
+	    var id = __webpack_require__(7).uniqueId();
 	    this._socket.send({
 	        msg: "method",
 	        id: id,
@@ -88,7 +86,7 @@ var DDP =
 	};
 
 	DDP.prototype.ping = function () {
-	    var id = __webpack_require__(8).uniqueId();
+	    var id = __webpack_require__(7).uniqueId();
 	    this._socket.send({
 	        msg: "ping",
 	        id: id
@@ -105,7 +103,7 @@ var DDP =
 	};
 
 	DDP.prototype.sub = function (name, params) {
-	    var id = __webpack_require__(8).uniqueId();
+	    var id = __webpack_require__(7).uniqueId();
 	    this._socket.send({
 	        msg: "sub",
 	        id: id,
@@ -128,129 +126,11 @@ var DDP =
 
 /***/ },
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = EventEmitter;
-
-/***/ },
-/* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	*   Set up the _socket proxy
-	*/
-
-	"use strict";
-
-	module.exports = function () {
-	    // _socket is a proxy for the _rawSocket, with the purpose of exposing a
-	    // more consistent event api
-	    var EventEmitter = __webpack_require__(1);
-	    this._socket = new EventEmitter();
-	    this._socket.send = (function (object) {
-	        var message = JSON.stringify(object);
-	        this._rawSocket.send(message);
-	        // Emit a copy of the object, as we don't know who might be listening
-	        this._socket.emit("message:out", JSON.parse(message));
-	    }).bind(this);
-	};
-
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	*   Maintain a DDP connection with the server
-	*/
-
-	"use strict";
-
-	module.exports = function () {
-	    // Register handlers for the `_socket` events that are responsible for
-	    // establishing and maintaining the DDP connection
-	    this._socket.on("open", (function () {
-	        // When the socket opens, send the `connect` message
-	        // to establish the DDP connection
-	        this.connect();
-	    }).bind(this));
-	    this._socket.on("close", (function () {
-	        // When the socket closes, emit the `disconnected` event to the DDP
-	        // connection, and try reconnecting after a timeout
-	        this.emit("disconnected");
-	        setTimeout(
-	            __webpack_require__(6).bind(this),
-	            __webpack_require__(7).RECONNECT_INTERVAL
-	        );
-	    }).bind(this));
-	    this._socket.on("message:in", (function (message) {
-	        // When the `connected` message is received, emit the `connected` event
-	        // to the DDP connection
-	        if (message.msg === "connected") {
-	            this.emit("connected");
-	        }
-	    }).bind(this));
-	};
-
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	*   Emits subscription and method related events
-	*/
-
-	"use strict";
-
-	module.exports = function () {
-	    this._socket.on("message:in", (function (message) {
-	        var msgs = [
-	            // Subscription messages
-	            "ready",
-	            "nosub",
-	            "added",
-	            "changed",
-	            "removed",
-	            // Method messages
-	            "result",
-	            "updated"
-	        ];
-	        if (__webpack_require__(8).contains(msgs, message.msg)) {
-	            this.emit(message.msg, message);
-	        }
-	    }).bind(this));
-	};
-
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	*   Responds to ping messages
-	*/
-
-	"use strict";
-
-	module.exports = function () {
-	    this._socket.on("message:in", (function (message) {
-	        if (message.msg === "ping") {
-	            this.pong(message.id);
-	        }
-	    }).bind(this));
-	};
-
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
 	/*
 	*   Create the socket instance and register event listeners
 	*/
-
-	"use strict";
 
 	module.exports = function () {
 	    // The `open`, `error` and `close` events are simply proxy-ed to `_socket`.
@@ -276,10 +156,71 @@ var DDP =
 
 
 /***/ },
-/* 7 */
+/* 2 */
+/***/ function(module, exports) {
+
+	module.exports = EventEmitter;
+
+/***/ },
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	/*
+	*   Set up the _socket proxy
+	*/
+
+	module.exports = function () {
+	    // _socket is a proxy for the _rawSocket, with the purpose of exposing a
+	    // more consistent event api
+	    var EventEmitter = __webpack_require__(2);
+	    this._socket = new EventEmitter();
+	    this._socket.send = (function (object) {
+	        var message = JSON.stringify(object);
+	        this._rawSocket.send(message);
+	        // Emit a copy of the object, as we don't know who might be listening
+	        this._socket.emit("message:out", JSON.parse(message));
+	    }).bind(this);
+	};
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	*   Maintain a DDP connection with the server
+	*/
+
+	module.exports = function () {
+	    // Register handlers for the `_socket` events that are responsible for
+	    // establishing and maintaining the DDP connection
+	    this._socket.on("open", (function () {
+	        // When the socket opens, send the `connect` message
+	        // to establish the DDP connection
+	        this.connect();
+	    }).bind(this));
+	    this._socket.on("close", (function () {
+	        // When the socket closes, emit the `disconnected` event to the DDP
+	        // connection, and try reconnecting after a timeout
+	        this.emit("disconnected");
+	        setTimeout(
+	            __webpack_require__(1).bind(this),
+	            __webpack_require__(5).RECONNECT_INTERVAL
+	        );
+	    }).bind(this));
+	    this._socket.on("message:in", (function (message) {
+	        // When the `connected` message is received, emit the `connected` event
+	        // to the DDP connection
+	        if (message.msg === "connected") {
+	            this.emit("connected");
+	        }
+	    }).bind(this));
+	};
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
 
 	module.exports = {
 	    DDP_VERSION: "1",
@@ -289,10 +230,36 @@ var DDP =
 
 
 /***/ },
-/* 8 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	/*
+	*   Emits subscription and method related events
+	*/
+
+	module.exports = function () {
+	    this._socket.on("message:in", (function (message) {
+	        var msgs = [
+	            // Subscription messages
+	            "ready",
+	            "nosub",
+	            "added",
+	            "changed",
+	            "removed",
+	            // Method messages
+	            "result",
+	            "updated"
+	        ];
+	        if (__webpack_require__(7).contains(msgs, message.msg)) {
+	            this.emit(message.msg, message);
+	        }
+	    }).bind(this));
+	};
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
 
 	var uniqueId = (function () {
 	    var i = 0;
@@ -311,5 +278,22 @@ var DDP =
 	};
 
 
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	/*
+	*   Responds to ping messages
+	*/
+
+	module.exports = function () {
+	    this._socket.on("message:in", (function (message) {
+	        if (message.msg === "ping") {
+	            this.pong(message.id);
+	        }
+	    }).bind(this));
+	};
+
+
 /***/ }
-/******/ ])
+/******/ ]);

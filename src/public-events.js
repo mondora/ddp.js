@@ -2,8 +2,6 @@
 *   Emits subscription and method related events
 */
 
-"use strict";
-
 module.exports = function () {
     this._socket.on("message:in", (function (message) {
         var msgs = [

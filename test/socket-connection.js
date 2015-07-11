@@ -1,5 +1,3 @@
-"use strict";
-
 require("should");
 var EventEmitter = require("wolfy87-eventemitter");
 var sinon        = require("sinon");

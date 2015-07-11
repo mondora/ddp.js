@@ -2,8 +2,6 @@
 *   Create the socket instance and register event listeners
 */
 
-"use strict";
-
 module.exports = function () {
     // The `open`, `error` and `close` events are simply proxy-ed to `_socket`.
     // The `message` event is instead parsed into a js object (if possible) and
