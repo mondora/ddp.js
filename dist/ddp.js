@@ -1,42 +1,51 @@
-var DDP =
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory(require("EventEmitter"));
+	else if(typeof define === 'function' && define.amd)
+		define(["EventEmitter"], factory);
+	else if(typeof exports === 'object')
+		exports["DDP"] = factory(require("EventEmitter"));
+	else
+		root["DDP"] = factory(root["EventEmitter"]);
+})(this, function(__WEBPACK_EXTERNAL_MODULE_1__) {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-/******/
+
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-/******/
+
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-/******/
+
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
 /******/ 			loaded: false
 /******/ 		};
-/******/
+
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
+
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-/******/
+
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/
-/******/
+
+
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-/******/
+
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-/******/
+
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-/******/
+
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
 /******/ })
@@ -47,269 +56,345 @@ var DDP =
 
 	"use strict";
 
-	var EventEmitter = __webpack_require__(1);
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 
-	var DDP = function (options) {
-	    // Configuration
-	    this._endpoint          = options.endpoint;
-	    this._SocketConstructor = options.SocketConstructor;
-	    // Init
-	    this._init();
-	};
-	DDP.prototype = Object.create(EventEmitter.prototype);
-	DDP.prototype.constructor = DDP;
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-	DDP.prototype._init = function () {
-	    __webpack_require__(2).call(this);
-	    __webpack_require__(3).call(this);
-	    __webpack_require__(4).call(this);
-	    __webpack_require__(5).call(this);
-	    __webpack_require__(6).call(this);
-	};
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-	DDP.prototype.connect = function () {
-	    var c = __webpack_require__(7);
-	    this._socket.send({
-	        msg: "connect",
-	        version: c.DDP_VERSION,
-	        support: [c.DDP_VERSION]
-	    });
-	};
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-	DDP.prototype.method = function (name, params) {
-	    var id = __webpack_require__(8).uniqueId();
-	    this._socket.send({
-	        msg: "method",
-	        id: id,
-	        method: name,
-	        params: params
-	    });
-	    return id;
-	};
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	DDP.prototype.ping = function () {
-	    var id = __webpack_require__(8).uniqueId();
-	    this._socket.send({
-	        msg: "ping",
-	        id: id
-	    });
-	    return id;
-	};
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 
-	DDP.prototype.pong = function (id) {
-	    this._socket.send({
-	        msg: "pong",
-	        id: id
-	    });
-	    return id;
-	};
+	var _wolfy87Eventemitter = __webpack_require__(1);
 
-	DDP.prototype.sub = function (name, params) {
-	    var id = __webpack_require__(8).uniqueId();
-	    this._socket.send({
-	        msg: "sub",
-	        id: id,
-	        name: name,
-	        params: params
-	    });
-	    return id;
-	};
+	var _wolfy87Eventemitter2 = _interopRequireDefault(_wolfy87Eventemitter);
 
-	DDP.prototype.unsub = function (id) {
-	    this._socket.send({
-	        msg: "unsub",
-	        id: id
-	    });
-	    return id;
-	};
+	var _queue = __webpack_require__(2);
 
-	module.exports = DDP;
+	var _queue2 = _interopRequireDefault(_queue);
 
+	var _socket = __webpack_require__(3);
+
+	var _socket2 = _interopRequireDefault(_socket);
+
+	var _utils = __webpack_require__(4);
+
+	var DDP_VERSION = "1";
+	var PUBLIC_EVENTS = [
+	// Subscription messages
+	"ready", "nosub", "added", "changed", "removed",
+	// Method messages
+	"result", "updated",
+	// Error messages
+	"error"];
+	var RECONNECT_INTERVAL = 10000;
+
+	var DDP = (function (_EventEmitter) {
+	    _inherits(DDP, _EventEmitter);
+
+	    _createClass(DDP, [{
+	        key: "emit",
+	        value: function emit() {
+	            var _this = this;
+
+	            var args = arguments;
+	            setTimeout(function () {
+	                _get(Object.getPrototypeOf(DDP.prototype), "emit", _this).apply(_this, args);
+	            }, 0);
+	        }
+	    }]);
+
+	    function DDP(options) {
+	        var _this2 = this;
+
+	        _classCallCheck(this, DDP);
+
+	        _get(Object.getPrototypeOf(DDP.prototype), "constructor", this).call(this);
+
+	        this.status = "disconnected";
+
+	        this.messageQueue = new _queue2["default"](function (message) {
+	            if (_this2.status === "connected") {
+	                _this2.socket.send(message);
+	                return true;
+	            } else {
+	                return false;
+	            }
+	        });
+
+	        this.socket = new _socket2["default"](options.SocketConstructor, options.endpoint);
+
+	        this.socket.on("open", function () {
+	            // When the socket opens, send the `connect` message
+	            // to establish the DDP connection
+	            _this2.socket.send({
+	                msg: "connect",
+	                version: DDP_VERSION,
+	                support: [DDP_VERSION]
+	            });
+	        });
+
+	        this.socket.on("close", function () {
+	            _this2.status = "disconnected";
+	            _this2.messageQueue.empty();
+	            _this2.emit("disconnected");
+	            // Schedule a reconnection
+	            setTimeout(_this2.socket.connect.bind(_this2.socket), RECONNECT_INTERVAL);
+	        });
+
+	        this.socket.on("message:in", function (message) {
+	            if (message.msg === "connected") {
+	                _this2.status = "connected";
+	                _this2.messageQueue.process();
+	                _this2.emit("connected");
+	            } else if (message.msg === "ping") {
+	                // Reply with a `pong` message to prevent the server from
+	                // closing the connection
+	                _this2.socket.send({ msg: "pong", id: message.id });
+	            } else if ((0, _utils.contains)(PUBLIC_EVENTS, message.msg)) {
+	                _this2.emit(message.msg, message);
+	            }
+	        });
+
+	        this.socket.connect();
+	    }
+
+	    _createClass(DDP, [{
+	        key: "method",
+	        value: function method(name, params) {
+	            var id = (0, _utils.uniqueId)();
+	            this.messageQueue.push({
+	                msg: "method",
+	                id: id,
+	                method: name,
+	                params: params
+	            });
+	            return id;
+	        }
+	    }, {
+	        key: "sub",
+	        value: function sub(name, params) {
+	            var id = (0, _utils.uniqueId)();
+	            this.messageQueue.push({
+	                msg: "sub",
+	                id: id,
+	                name: name,
+	                params: params
+	            });
+	            return id;
+	        }
+	    }, {
+	        key: "unsub",
+	        value: function unsub(id) {
+	            this.messageQueue.push({
+	                msg: "unsub",
+	                id: id
+	            });
+	            return id;
+	        }
+	    }]);
+
+	    return DDP;
+	})(_wolfy87Eventemitter2["default"]);
+
+	exports["default"] = DDP;
+	module.exports = exports["default"];
 
 /***/ },
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	module.exports = EventEmitter;
+	module.exports = __WEBPACK_EXTERNAL_MODULE_1__;
 
 /***/ },
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	*   Set up the _socket proxy
-	*/
+/***/ function(module, exports) {
 
 	"use strict";
 
-	module.exports = function () {
-	    // _socket is a proxy for the _rawSocket, with the purpose of exposing a
-	    // more consistent event api
-	    var EventEmitter = __webpack_require__(1);
-	    this._socket = new EventEmitter();
-	    this._socket.send = (function (object) {
-	        var message = JSON.stringify(object);
-	        this._rawSocket.send(message);
-	        // Emit a copy of the object, as we don't know who might be listening
-	        this._socket.emit("message:out", JSON.parse(message));
-	    }).bind(this);
-	};
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Queue = (function () {
+
+	    /*
+	    *   As the name implies, `consumer` is the (sole) consumer of the queue.
+	    *   It gets called with each element of the queue and its return value
+	    *   serves as a ack, determining whether the element is removed or not from
+	    *   the queue, allowing then subsequent elements to be processed.
+	    */
+
+	    function Queue(consumer) {
+	        _classCallCheck(this, Queue);
+
+	        this.consumer = consumer;
+	        this.queue = [];
+	    }
+
+	    _createClass(Queue, [{
+	        key: "push",
+	        value: function push(element) {
+	            this.queue.push(element);
+	            this.process();
+	        }
+	    }, {
+	        key: "process",
+	        value: function process() {
+	            var _this = this;
+
+	            setTimeout(function () {
+	                if (_this.queue.length !== 0) {
+	                    var ack = _this.consumer(_this.queue[0]);
+	                    if (ack) {
+	                        _this.queue.shift();
+	                        _this.process();
+	                    }
+	                }
+	            }, 0);
+	        }
+	    }, {
+	        key: "empty",
+	        value: function empty() {
+	            this.queue = [];
+	        }
+	    }]);
+
+	    return Queue;
+	})();
+
+	exports["default"] = Queue;
+	module.exports = exports["default"];
 
 /***/ },
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/*
-	*   Maintain a DDP connection with the server
-	*/
-
 	"use strict";
 
-	module.exports = function () {
-	    // Register handlers for the `_socket` events that are responsible for
-	    // establishing and maintaining the DDP connection
-	    this._socket.on("open", (function () {
-	        // When the socket opens, send the `connect` message
-	        // to establish the DDP connection
-	        this.connect();
-	    }).bind(this));
-	    this._socket.on("close", (function () {
-	        // When the socket closes, emit the `disconnected` event to the DDP
-	        // connection, and try reconnecting after a timeout
-	        this.emit("disconnected");
-	        setTimeout(
-	            __webpack_require__(6).bind(this),
-	            __webpack_require__(7).RECONNECT_INTERVAL
-	        );
-	    }).bind(this));
-	    this._socket.on("message:in", (function (message) {
-	        // When the `connected` message is received, emit the `connected` event
-	        // to the DDP connection
-	        if (message.msg === "connected") {
-	            this.emit("connected");
-	        }
-	    }).bind(this));
-	};
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+	var _wolfy87Eventemitter = __webpack_require__(1);
+
+	var _wolfy87Eventemitter2 = _interopRequireDefault(_wolfy87Eventemitter);
+
+	var Socket = (function (_EventEmitter) {
+	    _inherits(Socket, _EventEmitter);
+
+	    _createClass(Socket, [{
+	        key: "emit",
+	        value: function emit() {
+	            var _this = this;
+
+	            var args = arguments;
+	            setTimeout(function () {
+	                _get(Object.getPrototypeOf(Socket.prototype), "emit", _this).apply(_this, args);
+	            }, 0);
+	        }
+	    }]);
+
+	    function Socket(SocketConstructor, endpoint) {
+	        _classCallCheck(this, Socket);
+
+	        _get(Object.getPrototypeOf(Socket.prototype), "constructor", this).call(this);
+	        this.SocketConstructor = SocketConstructor;
+	        this.endpoint = endpoint;
+	    }
+
+	    _createClass(Socket, [{
+	        key: "send",
+	        value: function send(object) {
+	            var message = JSON.stringify(object);
+	            this.rawSocket.send(message);
+	            // Emit a copy of the object, as the listener might mutate it.
+	            this.emit("message:out", JSON.parse(message));
+	        }
+	    }, {
+	        key: "connect",
+	        value: function connect() {
+	            var _this2 = this;
+
+	            this.rawSocket = new this.SocketConstructor(this.endpoint);
+
+	            /*
+	            *   The `open`, `error` and `close` events are simply proxy-ed to `_socket`.
+	            *   The `message` event is instead parsed into a js object (if possible) and
+	            *   then passed as a parameter of the `message:in` event
+	            */
+
+	            this.rawSocket.onopen = function () {
+	                return _this2.emit("open");
+	            };
+	            this.rawSocket.onerror = function (error) {
+	                return _this2.emit("error", error);
+	            };
+	            this.rawSocket.onclose = function () {
+	                return _this2.emit("close");
+	            };
+	            this.rawSocket.onmessage = function (message) {
+	                var object;
+	                try {
+	                    object = JSON.parse(message.data);
+	                } catch (ignore) {
+	                    // Simply ignore the malformed message and return
+	                    return;
+	                }
+	                // Outside the try-catch block as it must only catch JSON parsing
+	                // errors, not errors that may occur inside a "message:in" event handler
+	                _this2.emit("message:in", object);
+	            };
+	        }
+	    }]);
+
+	    return Socket;
+	})(_wolfy87Eventemitter2["default"]);
+
+	exports["default"] = Socket;
+	module.exports = exports["default"];
 
 /***/ },
 /* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	*   Emits subscription and method related events
-	*/
+/***/ function(module, exports) {
 
 	"use strict";
 
-	module.exports = function () {
-	    this._socket.on("message:in", (function (message) {
-	        var msgs = [
-	            // Subscription messages
-	            "ready",
-	            "nosub",
-	            "added",
-	            "changed",
-	            "removed",
-	            // Method messages
-	            "result",
-	            "updated"
-	        ];
-	        if (__webpack_require__(8).contains(msgs, message.msg)) {
-	            this.emit(message.msg, message);
-	        }
-	    }).bind(this));
-	};
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.uniqueId = uniqueId;
+	exports.contains = contains;
+	var i = 0;
 
+	function uniqueId() {
+	    return (i++).toString();
+	}
 
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	*   Responds to ping messages
-	*/
-
-	"use strict";
-
-	module.exports = function () {
-	    this._socket.on("message:in", (function (message) {
-	        if (message.msg === "ping") {
-	            this.pong(message.id);
-	        }
-	    }).bind(this));
-	};
-
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	*   Create the socket instance and register event listeners
-	*/
-
-	"use strict";
-
-	module.exports = function () {
-	    // The `open`, `error` and `close` events are simply proxy-ed to `_socket`.
-	    // The `message` event is instead parsed into a js object (if possible) and
-	    // then passed as a parameter of the `message:in` event
-	    this._rawSocket = new this._SocketConstructor(this._endpoint);
-	    this._rawSocket.onopen    = this._socket.emit.bind(this._socket, "open");
-	    this._rawSocket.onerror   = this._socket.emit.bind(this._socket, "error");
-	    this._rawSocket.onclose   = this._socket.emit.bind(this._socket, "close");
-	    this._rawSocket.onmessage = (function (message) {
-	        var object;
-	        try {
-	            object = JSON.parse(message.data);
-	        } catch (ignore) {
-	            // Simply ignore the malformed message and return
-	            return;
-	        }
-	        // Outside the try-catch block as it must only catch JSON parsing
-	        // errors, not errors that may occur inside a "message:in" event handler
-	        this._socket.emit("message:in", object);
-	    }).bind(this);
-	};
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = {
-	    DDP_VERSION: "1",
-	    DEFAULT_PING_INTERVAL: 10000,
-	    RECONNECT_INTERVAL: 10000
-	};
-
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var uniqueId = (function () {
-	    var i = 0;
-	    return function () {
-	        return (i++).toString();
-	    };
-	})();
-
-	var contains = function (array, element) {
+	function contains(array, element) {
 	    return array.indexOf(element) !== -1;
-	};
-
-	module.exports = {
-	    uniqueId: uniqueId,
-	    contains: contains
-	};
-
+	}
 
 /***/ }
 /******/ ])
+});
+;

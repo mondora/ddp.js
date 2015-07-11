@@ -8,6 +8,7 @@
   ],
   "description": "ddp javascript client",
   "moduleType": [
+    "amd",
     "globals",
     "node"
   ],
@@ -20,8 +21,6 @@
   "ignore": [
     "**/.*",
     "node_modules",
-    "bower_components",
-    "test",
-    "tests"
+    "test"
   ]
 }

@@ -1,186 +1,262 @@
-"use strict";
+import chai, {expect} from "chai";
+import sinon from "sinon";
+import sinonChai from "sinon-chai";
+import takeTen from "./take-ten";
 
-require("should");
-var sinon        = require("sinon");
-var EventEmitter = require("wolfy87-eventemitter");
+chai.use(sinonChai);
 
-var DDP = require("../src/ddp.js");
+import DDP from "../src/ddp";
+import Socket from "../src/socket";
 
-describe("The DDP module", function () {
-    it("should export a constructor", function () {
-        DDP.should.be.of.type("function");
-        DDP.prototype.constructor.should.equal(DDP);
-    });
-});
+class SocketConstructorMock {
+    send () {}
+}
+const options = {
+    SocketConstructor: SocketConstructorMock
+};
 
-describe("The DDP constructor", function () {
-    beforeEach(function () {
-        sinon.stub(DDP.prototype, "_init");
-    });
-    afterEach(function () {
-        DDP.prototype._init.restore();
-    });
-    it("should inherit from EventEmitter", function () {
-        var ddp = new DDP({});
-        ddp.should.be.instanceOf(EventEmitter);
-    });
-    it("should save the endpoint and SocketConstructor passed to it as properties of the instance", function () {
-        var options = {
-            endpoint: "endpoint",
-            SocketConstructor: function () {
-                // Noop
-            }
-        };
-        var ddp = new DDP(options);
-        ddp._endpoint.should.equal(options.endpoint);
-        ddp._SocketConstructor.should.equal(options.SocketConstructor);
-    });
-    it("should call the _init method", function () {
-        var ddp = new DDP({});
-        ddp._init.called.should.equal(true);
-    });
-});
+describe("`DDP` class", function () {
 
-describe("The connect method", function () {
-    it("should _socket.send a connect message", function () {
-        var ctx = {
-            _socket: {
-                send: sinon.spy()
-            }
-        };
-        var c = require("../src/lib/constants.js");
-        DDP.prototype.connect.call(ctx);
-        ctx._socket.send.firstCall.args[0].should.eql({
-            msg: "connect",
-            version: c.DDP_VERSION,
-            support: [c.DDP_VERSION]
+    describe("`constructor` method", function () {
+
+        beforeEach(function () {
+            sinon.stub(Socket.prototype, "on");
+            sinon.stub(Socket.prototype, "connect");
         });
-    });
-});
 
-describe("The method method", function () {
-    it("should _socket.send a method message", function () {
-        var ctx = {
-            _socket: {
-                send: sinon.spy()
-            }
-        };
-        DDP.prototype.method.call(ctx, "methodName", ["list", "of", "params"]);
-        var arg = ctx._socket.send.firstCall.args[0];
-        arg.should.eql({
-            msg: "method",
-            id: arg.id,
-            method: "methodName",
-            params: ["list", "of", "params"]
+        afterEach(function () {
+            Socket.prototype.on.restore();
+            Socket.prototype.connect.restore();
         });
-    });
-    it("should return the id of the method call", function () {
-        var ctx = {
-            _socket: {
-                send: sinon.spy()
-            }
-        };
-        var ret = DDP.prototype.method.call(ctx, "methodName", []);
-        ret.should.equal(ctx._socket.send.firstCall.args[0].id);
-    });
-});
 
-describe("The ping method", function () {
-    it("should _socket.send a ping message", function () {
-        var ctx = {
-            _socket: {
-                send: sinon.spy()
-            }
-        };
-        DDP.prototype.ping.call(ctx);
-        var arg = ctx._socket.send.firstCall.args[0];
-        arg.should.eql({
-            msg: "ping",
-            id: arg.id
+        it("instantiates a `Socket`", function () {
+            var ddp = new DDP(options);
+            expect(ddp.socket).to.be.an.instanceOf(Socket);
         });
-    });
-    it("should return the id of the ping call", function () {
-        var ctx = {
-            _socket: {
-                send: sinon.spy()
-            }
-        };
-        var ret = DDP.prototype.ping.call(ctx);
-        ret.should.equal(ctx._socket.send.firstCall.args[0].id);
-    });
-});
 
-describe("The pong method", function () {
-    it("should _socket.send a pong message", function () {
-        var ctx = {
-            _socket: {
-                send: sinon.spy()
-            }
-        };
-        DDP.prototype.pong.call(ctx, "0");
-        ctx._socket.send.firstCall.args[0].should.eql({
-            msg: "pong",
-            id: "0"
+        it("registers handlers for `socket` events", function () {
+            var ddp = new DDP(options);
+            expect(ddp.socket.on).to.have.always.been.calledWithMatch(
+                sinon.match.string,
+                sinon.match.func
+            );
         });
-    });
-    it("should return the id of the pong call", function () {
-        var ctx = {
-            _socket: {
-                send: sinon.spy()
-            }
-        };
-        var ret = DDP.prototype.pong.call(ctx, "0");
-        ret.should.equal("0");
-    });
-});
 
-describe("The sub method", function () {
-    it("should _socket.send a sub message", function () {
-        var ctx = {
-            _socket: {
-                send: sinon.spy()
-            }
-        };
-        DDP.prototype.sub.call(ctx, "subName", ["list", "of", "params"]);
-        var arg = ctx._socket.send.firstCall.args[0];
-        arg.should.eql({
-            msg: "sub",
-            id: arg.id,
-            name: "subName",
-            params: ["list", "of", "params"]
+        it("calls `socket.connect`", function () {
+            var ddp = new DDP(options);
+            expect(ddp.socket.connect).to.have.callCount(1);
         });
-    });
-    it("should return the id of the sub call", function () {
-        var ctx = {
-            _socket: {
-                send: sinon.spy()
-            }
-        };
-        var ret = DDP.prototype.sub.call(ctx, "subName", []);
-        ret.should.equal(ctx._socket.send.firstCall.args[0].id);
-    });
-});
 
-describe("The unsub method", function () {
-    it("should _socket.send a unsub message", function () {
-        var ctx = {
-            _socket: {
-                send: sinon.spy()
-            }
-        };
-        DDP.prototype.unsub.call(ctx, "0");
-        ctx._socket.send.firstCall.args[0].should.eql({
-            msg: "unsub",
-            id: "0"
+    });
+
+    describe("`method` method", function () {
+
+        it("sends a DDP `method` message", function () {
+            var ddp = new DDP(options);
+            ddp.messageQueue.push = sinon.spy();
+            var id = ddp.method("name", ["param"]);
+            expect(ddp.messageQueue.push).to.have.been.calledWith({
+                msg: "method",
+                id: id,
+                method: "name",
+                params: ["param"]
+            });
         });
+
+        it("returns the method's `id`", function () {
+            var ddp = new DDP(options);
+            ddp.messageQueue.push = sinon.spy();
+            var id = ddp.method("name", ["param"]);
+            expect(id).to.be.a("string");
+        });
+
     });
-    it("should return the id of the unsub call", function () {
-        var ctx = {
-            _socket: {
-                send: sinon.spy()
-            }
-        };
-        var ret = DDP.prototype.unsub.call(ctx, "0");
-        ret.should.equal("0");
+
+    describe("`sub` method", function () {
+
+        it("sends a DDP `sub` message", function () {
+            var ddp = new DDP(options);
+            ddp.messageQueue.push = sinon.spy();
+            var id = ddp.sub("name", ["param"]);
+            expect(ddp.messageQueue.push).to.have.been.calledWith({
+                msg: "sub",
+                id: id,
+                name: "name",
+                params: ["param"]
+            });
+        });
+
+        it("returns the sub's `id`", function () {
+            var ddp = new DDP(options);
+            ddp.messageQueue.push = sinon.spy();
+            var id = ddp.sub("name", ["param"]);
+            expect(id).to.be.a("string");
+        });
+
     });
+
+    describe("`unsub` method", function () {
+
+        it("sends a DDP `unsub` message", function () {
+            var ddp = new DDP(options);
+            ddp.messageQueue.push = sinon.spy();
+            var id = ddp.unsub("id");
+            expect(ddp.messageQueue.push).to.have.been.calledWith({
+                msg: "unsub",
+                id: id
+            });
+        });
+
+        it("returns the sub's `id`", function () {
+            var ddp = new DDP(options);
+            ddp.messageQueue.push = sinon.spy();
+            var id = ddp.unsub("id");
+            expect(id).to.be.a("string");
+            expect(id).to.equal("id");
+        });
+
+    });
+
+    describe("`socket` `open` handler", function () {
+
+        it("sends the `connect` DDP message", function (done) {
+            var ddp = new DDP(options);
+            ddp.socket.send = sinon.spy();
+            ddp.socket.emit("open");
+            takeTen(() => {
+                expect(ddp.socket.send).to.have.been.calledWith({
+                    msg: "connect",
+                    version: "1",
+                    support: ["1"]
+                });
+            }, done);
+        });
+
+    });
+
+    describe("`socket` `close` handler", function () {
+
+        before(function () {
+            sinon.spy(global, "setTimeout");
+        });
+
+        after(function () {
+            global.setTimeout.restore();
+        });
+
+        it("emits the `disconnected` event", function (done) {
+            var ddp = new DDP(options);
+            ddp.emit = sinon.spy();
+            ddp.socket.emit("close");
+            takeTen(() => {
+                expect(ddp.emit).to.have.been.calledWith("disconnected");
+            }, done);
+        });
+
+        it("sets the status to `disconnected`", function (done) {
+            var ddp = new DDP(options);
+            ddp.status = "connected";
+            ddp.emit = sinon.spy();
+            ddp.socket.emit("close");
+            takeTen(() => {
+                expect(ddp.status).to.equal("disconnected");
+            }, done);
+        });
+
+        it("schedules a reconnection", function (done) {
+            var ddp = new DDP(options);
+            ddp.socket.emit("close");
+            var RECONNECT_INTERVAL = 10000;
+            takeTen(() => {
+                expect(global.setTimeout).to.have.been.calledWithMatch(
+                    sinon.match.func,
+                    RECONNECT_INTERVAL
+                );
+            }, done);
+        });
+
+    });
+
+    describe("`socket` `message:in` handler", function () {
+
+        it("responds to `ping` DDP messages", function (done) {
+            var ddp = new DDP(options);
+            ddp.socket.send = sinon.spy();
+            ddp.socket.emit("message:in", {
+                id: "id",
+                msg: "ping"
+            });
+            takeTen(() => {
+                expect(ddp.socket.send).to.have.been.calledWith({
+                    id: "id",
+                    msg: "pong"
+                });
+            }, done);
+        });
+
+        it("triggers `messageQueue` processing upon connection", function (done) {
+            var ddp = new DDP(options);
+            ddp.emit = sinon.spy();
+            ddp.messageQueue.process = sinon.spy();
+            ddp.socket.emit("message:in", {msg: "connected"});
+            takeTen(() => {
+                expect(ddp.messageQueue.process).to.have.callCount(1);
+            }, done);
+        });
+
+        it("sets the status to `connected` upon connection", function (done) {
+            var ddp = new DDP(options);
+            ddp.emit = sinon.spy();
+            ddp.socket.emit("message:in", {msg: "connected"});
+            takeTen(() => {
+                expect(ddp.status).to.equal("connected");
+            }, done);
+        });
+
+        it("emits public DDP messages as events", function (done) {
+            var ddp = new DDP(options);
+            ddp.emit = sinon.spy();
+            var message = {
+                id: "id",
+                msg: "result"
+            };
+            ddp.socket.emit("message:in", message);
+            takeTen(() => {
+                expect(ddp.emit).to.have.been.calledWith("result", message);
+            }, done);
+        });
+
+        it("ignores unknown (or non public) DDP messages", function (done) {
+            var ddp = new DDP(options);
+            ddp.emit = sinon.spy();
+            var message = {
+                id: "id",
+                msg: "not-a-ddp-message"
+            };
+            ddp.socket.emit("message:in", message);
+            takeTen(() => {
+                expect(ddp.emit).to.have.callCount(0);
+            }, done);
+        });
+
+    });
+
+    describe("`messageQueue` consumer", function () {
+
+        it("acks if `status` is `connected`", function () {
+            var ddp = new DDP(options);
+            ddp.status = "connected";
+            var ack = ddp.messageQueue.consumer({});
+            expect(ack).to.equal(true);
+        });
+
+        it("doesn't ack if `status` is `disconnected`", function () {
+            var ddp = new DDP(options);
+            ddp.status = "disconnected";
+            var ack = ddp.messageQueue.consumer({});
+            expect(ack).to.equal(false);
+        });
+
+    });
+
 });
