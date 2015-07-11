@@ -4,9 +4,11 @@
   "description": "ddp javascript client",
   "main": "src/ddp.js",
   "scripts": {
-    "build": "./node_modules/.bin/gulp build",
-    "test": "mocha --compilers js:babel/register",
-    "dev": "./node_modules/.bin/gulp"
+    "build": "gulp build",
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
+    "dev": "gulp",
+    "lint": "eslint src/",
+    "test": "istanbul cover _mocha --report lcovonly -- -R spec --compilers js:babel/register"
   },
   "repository": {
     "type": "git",
