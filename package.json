@@ -2,7 +2,7 @@
   "name": "ddp.js",
   "version": "1.0.0",
   "description": "ddp javascript client",
-  "main": "src/ddp.js",
+  "main": "dist/ddp.js",
   "scripts": {
     "build": "gulp build",
     "coveralls": "cat ./coverage/lcov.info | coveralls",

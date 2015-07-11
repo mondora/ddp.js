@@ -1,3 +1,18 @@
+##1.1.0 (July 11, 2015)
+
+Moved the code to use ES6. In the process, I also refactored it a bit to use
+less "exotic" patterns, but there _should be_ no breaking changes to the public
+API.
+
+Two enhancements:
+
+1.  a `status` property (`connected` / `disconnected`) is now available on the
+    instance
+1.  it's now possible to call methods `sub`, `unsub`, and `method` right after
+    creating the instance. Calls are queued and performed after the `connected`
+    event
+
+
 ##1.0.0 (January 11, 2015)
 
 The library has been rewritten from scratch and its scope somewhat reduced. The

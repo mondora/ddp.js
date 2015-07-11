@@ -4,7 +4,7 @@
 [![devDependency Status](https://david-dm.org/mondora/ddp.js/dev-status.svg)](https://david-dm.org/mondora/ddp.js#info=devDependencies)
 
 #WARNING
-Breaking changes from 0.6.x to 1.0.0, [read the
+Breaking changes from ~0.6.0 to >=1.0.0, [read the
 CHANGELOG](https://github.com/mondora/ddp.js/blob/master/CHANGELOG.md) for more
 info.
 
@@ -43,35 +43,36 @@ var ddp = new DDP(options);
 
 ddp.on("connected", function () {
     console.log("Connected");
+});
 
-    var subId = ddp.sub("myCollection");
-    ddp.on("ready", function (message) {
-        if (message.id === subId) {
-            console.log("Subscruption to myCollection ready");
-        }
-    });
-    ddp.on("added", function (message) {
-        console.log(message.collection);
-    });
+var subId = ddp.sub("mySubscription");
+ddp.on("ready", function (message) {
+    if (message.id === subId) {
+        console.log("mySubscription ready");
+    }
+});
+ddp.on("added", function (message) {
+    console.log(message.collection);
+});
 
-    var myLoginParams = {
-        user: {
-            email: "user@example.com"
-        },
-        password: "hunter2"
-    };
-    var methodId = ddp.method("login", [myLoginParams]);
-    ddp.on("result", function (message) {
-        if (message.id === methodId && !message.error) {
-            console.log("Logged in!");
-        }
-    });
+var myLoginParams = {
+    user: {
+        email: "user@example.com"
+    },
+    password: "hunter2"
+};
+var methodId = ddp.method("login", [myLoginParams]);
+ddp.on("result", function (message) {
+    if (message.id === methodId && !message.error) {
+        console.log("Logged in!");
+    }
 });
 ```
 
 ##Tests
 
-`npm test` to run tests, `npm run coverage` to generate the coverage report.
+`npm test` to run tests. Coverage reports are generated in the `coverage/`
+directory.
 
 ##Public API
 
