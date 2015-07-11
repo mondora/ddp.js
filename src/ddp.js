@@ -1,77 +1,90 @@
-var EventEmitter = require("wolfy87-eventemitter");
+import EventEmitter from "wolfy87-eventemitter";
+import Socket from "./socket";
+import {contains, uniqueId} from "./utils";
 
-var DDP = function (options) {
-    // Configuration
-    this._endpoint          = options.endpoint;
-    this._SocketConstructor = options.SocketConstructor;
-    // Init
-    this._init();
-};
-DDP.prototype = Object.create(EventEmitter.prototype);
-DDP.prototype.constructor = DDP;
+const DDP_VERSION = "1";
+const PUBLIC_EVENTS = [
+    // Connection messages
+    "connected",
+    // Subscription messages
+    "ready", "nosub", "added", "changed", "removed",
+    // Method messages
+    "result", "updated",
+    // Error messages
+    "error"
+];
+const RECONNECT_INTERVAL = 10000;
 
-DDP.prototype._init = function () {
-    require("./socket-proxy.js").call(this);
-    require("./ddp-connection.js").call(this);
-    require("./public-events.js").call(this);
-    require("./ping-pong.js").call(this);
-    require("./socket-connection.js").call(this);
-};
+export default class DDP extends EventEmitter {
 
-DDP.prototype.connect = function () {
-    var c = require("./lib/constants.js");
-    this._socket.send({
-        msg: "connect",
-        version: c.DDP_VERSION,
-        support: [c.DDP_VERSION]
-    });
-};
+    constructor (options) {
 
-DDP.prototype.method = function (name, params) {
-    var id = require("./lib/utils.js").uniqueId();
-    this._socket.send({
-        msg: "method",
-        id: id,
-        method: name,
-        params: params
-    });
-    return id;
-};
+        super();
 
-DDP.prototype.ping = function () {
-    var id = require("./lib/utils.js").uniqueId();
-    this._socket.send({
-        msg: "ping",
-        id: id
-    });
-    return id;
-};
+        this.socket = new Socket(options.SocketConstructor, options.endpoint);
 
-DDP.prototype.pong = function (id) {
-    this._socket.send({
-        msg: "pong",
-        id: id
-    });
-    return id;
-};
+        this.socket.on("open", () => {
+            // When the socket opens, send the `connect` message
+            // to establish the DDP connection
+            this.socket.send({
+                msg: "connect",
+                version: DDP_VERSION,
+                support: [DDP_VERSION]
+            });
+        });
 
-DDP.prototype.sub = function (name, params) {
-    var id = require("./lib/utils.js").uniqueId();
-    this._socket.send({
-        msg: "sub",
-        id: id,
-        name: name,
-        params: params
-    });
-    return id;
-};
+        this.socket.on("close", () => {
+            // When the socket closes, emit the `disconnected` event to the DDP
+            // connection, and try reconnecting after a timeout
+            this.emit("disconnected");
+            setTimeout(
+                this.socket.connect.bind(this.socket),
+                RECONNECT_INTERVAL
+            );
+        });
 
-DDP.prototype.unsub = function (id) {
-    this._socket.send({
-        msg: "unsub",
-        id: id
-    });
-    return id;
-};
+        this.socket.on("message:in", (message) => {
+            if (message.msg === "ping") {
+                // When a `ping` message is received, reply with a `pong` message
+                // (the server might close the connection if we don't)
+                this.socket.send({msg: "pong", id: message.id});
+            } else if (contains(PUBLIC_EVENTS, message.msg)) {
+                this.emit(message.msg, message);
+            }
+        });
 
-module.exports = DDP;
+        this.socket.connect();
+
+    }
+
+    method (name, params) {
+        var id = uniqueId();
+        this.socket.send({
+            msg: "method",
+            id: id,
+            method: name,
+            params: params
+        });
+        return id;
+    }
+
+    sub (name, params) {
+        var id = uniqueId();
+        this.socket.send({
+            msg: "sub",
+            id: id,
+            name: name,
+            params: params
+        });
+        return id;
+    }
+
+    unsub (id) {
+        this.socket.send({
+            msg: "unsub",
+            id: id
+        });
+        return id;
+    }
+
+}

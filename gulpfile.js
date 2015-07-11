@@ -1,10 +1,55 @@
-var gulp   = require("gulp");
-var eslint = require("gulp-eslint");
-var mocha  = require("gulp-spawn-mocha");
+var gulp    = require("gulp");
+var eslint  = require("gulp-eslint");
+var mocha   = require("gulp-spawn-mocha");
+var gutil   = require("gulp-util");
+var path    = require("path");
+var webpack = require("webpack");
+
+var build = function (minify, callback) {
+    webpack({
+        entry: "./src/ddp.js",
+        externals: {
+            "wolfy87-eventemitter": "EventEmitter"
+        },
+        module: {
+            loaders: [{
+                test: /\.js$/,
+                exclude: /(node_modules|bower_components)/,
+                loader: "babel"
+            }]
+        },
+        output: {
+            libraryTarget: "umd",
+            library: "DDP",
+            path: path.join(__dirname, "/dist"),
+            filename: (minify ? "ddp.min.js" : "ddp.js")
+        },
+        plugins: minify ? [
+            new webpack.optimize.UglifyJsPlugin({
+                compress: {
+                    warnings: false
+                }
+            })
+        ] : null
+    }, function (err, stats) {
+        if (err) {
+            throw new gutil.PluginError("webpack", err);
+        }
+        gutil.log("[webpack]", stats.toString({colors: true}));
+        callback();
+    });
+};
+
+gulp.task("build", function (callback) {
+    build(false, function () {
+        build(true, callback);
+    });
+});
 
 gulp.task("test", function () {
     return gulp.src(["test/**/*.js"], {read: false})
         .pipe(mocha({
+            compilers: "js:babel/register",
             istanbul: true
         }));
 });
