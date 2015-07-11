@@ -1,11 +1,10 @@
 import EventEmitter from "wolfy87-eventemitter";
+import Queue from "./queue";
 import Socket from "./socket";
 import {contains, uniqueId} from "./utils";
 
 const DDP_VERSION = "1";
 const PUBLIC_EVENTS = [
-    // Connection messages
-    "connected",
     // Subscription messages
     "ready", "nosub", "added", "changed", "removed",
     // Method messages
@@ -17,9 +16,27 @@ const RECONNECT_INTERVAL = 10000;
 
 export default class DDP extends EventEmitter {
 
+    emit () {
+        var args = arguments;
+        setTimeout(() => {
+            super.emit.apply(this, args);
+        }, 0);
+    }
+
     constructor (options) {
 
         super();
+
+        this.status = "disconnected";
+
+        this.messageQueue = new Queue((message) => {
+            if (this.status === "connected") {
+                this.socket.send(message);
+                return true;
+            } else {
+                return false;
+            }
+        });
 
         this.socket = new Socket(options.SocketConstructor, options.endpoint);
 
@@ -34,19 +51,21 @@ export default class DDP extends EventEmitter {
         });
 
         this.socket.on("close", () => {
-            // When the socket closes, emit the `disconnected` event to the DDP
-            // connection, and try reconnecting after a timeout
+            this.status = "disconnected";
+            this.messageQueue.empty();
             this.emit("disconnected");
-            setTimeout(
-                this.socket.connect.bind(this.socket),
-                RECONNECT_INTERVAL
-            );
+            // Schedule a reconnection
+            setTimeout(this.socket.connect.bind(this.socket), RECONNECT_INTERVAL);
         });
 
         this.socket.on("message:in", (message) => {
-            if (message.msg === "ping") {
-                // When a `ping` message is received, reply with a `pong` message
-                // (the server might close the connection if we don't)
+            if (message.msg === "connected") {
+                this.status = "connected";
+                this.messageQueue.process();
+                this.emit("connected");
+            } else if (message.msg === "ping") {
+                // Reply with a `pong` message to prevent the server from
+                // closing the connection
                 this.socket.send({msg: "pong", id: message.id});
             } else if (contains(PUBLIC_EVENTS, message.msg)) {
                 this.emit(message.msg, message);
@@ -59,7 +78,7 @@ export default class DDP extends EventEmitter {
 
     method (name, params) {
         var id = uniqueId();
-        this.socket.send({
+        this.messageQueue.push({
             msg: "method",
             id: id,
             method: name,
@@ -70,7 +89,7 @@ export default class DDP extends EventEmitter {
 
     sub (name, params) {
         var id = uniqueId();
-        this.socket.send({
+        this.messageQueue.push({
             msg: "sub",
             id: id,
             name: name,
@@ -80,7 +99,7 @@ export default class DDP extends EventEmitter {
     }
 
     unsub (id) {
-        this.socket.send({
+        this.messageQueue.push({
             msg: "unsub",
             id: id
         });

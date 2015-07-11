@@ -74,16 +74,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _wolfy87Eventemitter2 = _interopRequireDefault(_wolfy87Eventemitter);
 
-	var _socket = __webpack_require__(2);
+	var _queue = __webpack_require__(2);
+
+	var _queue2 = _interopRequireDefault(_queue);
+
+	var _socket = __webpack_require__(3);
 
 	var _socket2 = _interopRequireDefault(_socket);
 
-	var _utils = __webpack_require__(3);
+	var _utils = __webpack_require__(4);
 
 	var DDP_VERSION = "1";
 	var PUBLIC_EVENTS = [
-	// Connection messages
-	"connected",
 	// Subscription messages
 	"ready", "nosub", "added", "changed", "removed",
 	// Method messages
@@ -93,19 +95,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	var RECONNECT_INTERVAL = 10000;
 
 	var DDP = (function (_EventEmitter) {
+	    _inherits(DDP, _EventEmitter);
+
+	    _createClass(DDP, [{
+	        key: "emit",
+	        value: function emit() {
+	            var _this = this;
+
+	            var args = arguments;
+	            setTimeout(function () {
+	                _get(Object.getPrototypeOf(DDP.prototype), "emit", _this).apply(_this, args);
+	            }, 0);
+	        }
+	    }]);
+
 	    function DDP(options) {
-	        var _this = this;
+	        var _this2 = this;
 
 	        _classCallCheck(this, DDP);
 
 	        _get(Object.getPrototypeOf(DDP.prototype), "constructor", this).call(this);
+
+	        this.status = "disconnected";
+
+	        this.messageQueue = new _queue2["default"](function (message) {
+	            if (_this2.status === "connected") {
+	                _this2.socket.send(message);
+	                return true;
+	            } else {
+	                return false;
+	            }
+	        });
 
 	        this.socket = new _socket2["default"](options.SocketConstructor, options.endpoint);
 
 	        this.socket.on("open", function () {
 	            // When the socket opens, send the `connect` message
 	            // to establish the DDP connection
-	            _this.socket.send({
+	            _this2.socket.send({
 	                msg: "connect",
 	                version: DDP_VERSION,
 	                support: [DDP_VERSION]
@@ -113,32 +140,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 
 	        this.socket.on("close", function () {
-	            // When the socket closes, emit the `disconnected` event to the DDP
-	            // connection, and try reconnecting after a timeout
-	            _this.emit("disconnected");
-	            setTimeout(_this.socket.connect.bind(_this.socket), RECONNECT_INTERVAL);
+	            _this2.status = "disconnected";
+	            _this2.messageQueue.empty();
+	            _this2.emit("disconnected");
+	            // Schedule a reconnection
+	            setTimeout(_this2.socket.connect.bind(_this2.socket), RECONNECT_INTERVAL);
 	        });
 
 	        this.socket.on("message:in", function (message) {
-	            if (message.msg === "ping") {
-	                // When a `ping` message is received, reply with a `pong` message
-	                // (the server might close the connection if we don't)
-	                _this.socket.send({ msg: "pong", id: message.id });
+	            if (message.msg === "connected") {
+	                _this2.status = "connected";
+	                _this2.messageQueue.process();
+	                _this2.emit("connected");
+	            } else if (message.msg === "ping") {
+	                // Reply with a `pong` message to prevent the server from
+	                // closing the connection
+	                _this2.socket.send({ msg: "pong", id: message.id });
 	            } else if ((0, _utils.contains)(PUBLIC_EVENTS, message.msg)) {
-	                _this.emit(message.msg, message);
+	                _this2.emit(message.msg, message);
 	            }
 	        });
 
 	        this.socket.connect();
 	    }
 
-	    _inherits(DDP, _EventEmitter);
-
 	    _createClass(DDP, [{
 	        key: "method",
 	        value: function method(name, params) {
 	            var id = (0, _utils.uniqueId)();
-	            this.socket.send({
+	            this.messageQueue.push({
 	                msg: "method",
 	                id: id,
 	                method: name,
@@ -150,7 +180,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: "sub",
 	        value: function sub(name, params) {
 	            var id = (0, _utils.uniqueId)();
-	            this.socket.send({
+	            this.messageQueue.push({
 	                msg: "sub",
 	                id: id,
 	                name: name,
@@ -161,7 +191,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: "unsub",
 	        value: function unsub(id) {
-	            this.socket.send({
+	            this.messageQueue.push({
 	                msg: "unsub",
 	                id: id
 	            });
@@ -183,6 +213,70 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 2 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Queue = (function () {
+
+	    /*
+	    *   As the name implies, `consumer` is the (sole) consumer of the queue.
+	    *   It gets called with each element of the queue and its return value
+	    *   serves as a ack, determining whether the element is removed or not from
+	    *   the queue, allowing then subsequent elements to be processed.
+	    */
+
+	    function Queue(consumer) {
+	        _classCallCheck(this, Queue);
+
+	        this.consumer = consumer;
+	        this.queue = [];
+	    }
+
+	    _createClass(Queue, [{
+	        key: "push",
+	        value: function push(element) {
+	            this.queue.push(element);
+	            this.process();
+	        }
+	    }, {
+	        key: "process",
+	        value: function process() {
+	            var _this = this;
+
+	            setTimeout(function () {
+	                if (_this.queue.length !== 0) {
+	                    var ack = _this.consumer(_this.queue[0]);
+	                    if (ack) {
+	                        _this.queue.shift();
+	                        _this.process();
+	                    }
+	                }
+	            }, 0);
+	        }
+	    }, {
+	        key: "empty",
+	        value: function empty() {
+	            this.queue = [];
+	        }
+	    }]);
+
+	    return Queue;
+	})();
+
+	exports["default"] = Queue;
+	module.exports = exports["default"];
+
+/***/ },
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -206,6 +300,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _wolfy87Eventemitter2 = _interopRequireDefault(_wolfy87Eventemitter);
 
 	var Socket = (function (_EventEmitter) {
+	    _inherits(Socket, _EventEmitter);
+
+	    _createClass(Socket, [{
+	        key: "emit",
+	        value: function emit() {
+	            var _this = this;
+
+	            var args = arguments;
+	            setTimeout(function () {
+	                _get(Object.getPrototypeOf(Socket.prototype), "emit", _this).apply(_this, args);
+	            }, 0);
+	        }
+	    }]);
+
 	    function Socket(SocketConstructor, endpoint) {
 	        _classCallCheck(this, Socket);
 
@@ -214,20 +322,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.endpoint = endpoint;
 	    }
 
-	    _inherits(Socket, _EventEmitter);
-
 	    _createClass(Socket, [{
 	        key: "send",
 	        value: function send(object) {
 	            var message = JSON.stringify(object);
 	            this.rawSocket.send(message);
-	            // Emit a copy of the object, as we don't know who might be listening
+	            // Emit a copy of the object, as the listener might mutate it.
 	            this.emit("message:out", JSON.parse(message));
 	        }
 	    }, {
 	        key: "connect",
 	        value: function connect() {
-	            var _this = this;
+	            var _this2 = this;
 
 	            this.rawSocket = new this.SocketConstructor(this.endpoint);
 
@@ -238,13 +344,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            */
 
 	            this.rawSocket.onopen = function () {
-	                return _this.emit("open");
+	                return _this2.emit("open");
 	            };
 	            this.rawSocket.onerror = function (error) {
-	                return _this.emit("error", error);
+	                return _this2.emit("error", error);
 	            };
 	            this.rawSocket.onclose = function () {
-	                return _this.emit("close");
+	                return _this2.emit("close");
 	            };
 	            this.rawSocket.onmessage = function (message) {
 	                var object;
@@ -256,7 +362,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	                // Outside the try-catch block as it must only catch JSON parsing
 	                // errors, not errors that may occur inside a "message:in" event handler
-	                _this.emit("message:in", object);
+	                _this2.emit("message:in", object);
 	            };
 	        }
 	    }]);
@@ -268,7 +374,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 3 */
+/* 4 */
 /***/ function(module, exports) {
 
 	"use strict";

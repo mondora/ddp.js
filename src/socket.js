@@ -2,6 +2,13 @@ import EventEmitter from "wolfy87-eventemitter";
 
 export default class Socket extends EventEmitter {
 
+    emit () {
+        var args = arguments;
+        setTimeout(() => {
+            super.emit.apply(this, args);
+        }, 0);
+    }
+
     constructor (SocketConstructor, endpoint) {
         super();
         this.SocketConstructor = SocketConstructor;
@@ -11,7 +18,7 @@ export default class Socket extends EventEmitter {
     send (object) {
         var message = JSON.stringify(object);
         this.rawSocket.send(message);
-        // Emit a copy of the object, as we don't know who might be listening
+        // Emit a copy of the object, as the listener might mutate it.
         this.emit("message:out", JSON.parse(message));
     }
 
