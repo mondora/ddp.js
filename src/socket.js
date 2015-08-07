@@ -47,7 +47,10 @@ export default class Socket extends EventEmitter {
             // errors, not errors that may occur inside a "message:in" event handler
             this.emit("message:in", object);
         };
-
     }
 
+    close () {
+        this.rawSocket.close();
+    }
+    
 }
