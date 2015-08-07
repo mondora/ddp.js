@@ -52,4 +52,5 @@ export default class Socket extends EventEmitter {
     close () {
         this.rawSocket.close();
     }
+    
 }

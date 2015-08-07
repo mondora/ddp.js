@@ -109,5 +109,5 @@ export default class DDP extends EventEmitter {
     close () {
         this.socket.close();
     }
-    
+
 }
