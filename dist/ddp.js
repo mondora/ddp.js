@@ -198,6 +198,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return id;
 	        }
 	    }, {
+	        key: "ping",
+	        value: function ping() {
+	            var id = (0, _utils.uniqueId)();
+	            this.messageQueue.push({
+	                msg: "ping",
+	                id: id
+	            });
+	            return id;
+	        }
+	    }, {
 	        key: "close",
 	        value: function close() {
 	            this.socket.close();
