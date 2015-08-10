@@ -5,6 +5,8 @@ import {contains, uniqueId} from "./utils";
 
 const DDP_VERSION = "1";
 const PUBLIC_EVENTS = [
+    // Protocol messages
+    "ping", "pong",
     // Subscription messages
     "ready", "nosub", "added", "changed", "removed",
     // Method messages
