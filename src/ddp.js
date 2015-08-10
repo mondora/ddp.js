@@ -106,6 +106,15 @@ export default class DDP extends EventEmitter {
         return id;
     }
 
+    ping () {
+        var id = uniqueId();
+        this.messageQueue.push({
+            msg: "ping",
+            id: id
+        });
+        return id;
+    }
+
     close () {
         this.socket.close();
     }
