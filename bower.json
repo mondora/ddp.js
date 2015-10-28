@@ -22,5 +22,8 @@
     "**/.*",
     "node_modules",
     "test"
-  ]
+  ],
+  "dependencies": {
+    "eventEmitter": "^4.2.11"
+  }
 }
