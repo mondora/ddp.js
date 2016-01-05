@@ -125,6 +125,16 @@ describe("`Socket` class", function () {
             EJSON.parse.restore();
         });
 
+        it("parses correctly EJSON-specific data types", function () {
+            var socket = new Socket(SocketConstructorMock);
+            var testDate = new Date();
+            sinon.stub(EJSON, "parse");
+            socket.connect();
+            socket.rawSocket.onmessage({data: testDate});
+            expect(EJSON.parse).to.have.been.calledWith(testDate);
+            EJSON.parse.restore();
+        });
+
         it("emits `message:in` events", function () {
             var socket = new Socket(SocketConstructorMock);
             socket.emit = sinon.spy();
