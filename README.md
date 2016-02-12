@@ -3,16 +3,11 @@
 [![Dependency Status](https://david-dm.org/mondora/ddp.js.svg)](https://david-dm.org/mondora/ddp.js)
 [![devDependency Status](https://david-dm.org/mondora/ddp.js/dev-status.svg)](https://david-dm.org/mondora/ddp.js#info=devDependencies)
 
-#WARNING
-Breaking changes from ~0.6.0 to >=1.0.0, [read the
-CHANGELOG](https://github.com/mondora/ddp.js/blob/master/CHANGELOG.md) for more
-info.
+# ddp.js
 
-#ddp.js
+A javascript isomorphic/universal ddp client.
 
-A javascript isomorphic ddp client.
-
-##What is it for?
+## What is it for?
 
 The purpose of this library is:
 
@@ -21,7 +16,7 @@ The purpose of this library is:
 - to give the developer a clear, consistent API to communicate with the ddp
   server
 
-##Install
+## Install
 
 Via npm
 
@@ -31,57 +26,57 @@ Or via bower
 
     bower install ddp.js
 
-##Example usage
+## Example usage
 
-```javascript
-var DDP = require("ddp.js");
-var options = {
+```js
+const DDP = require("ddp.js");
+const options = {
     endpoint: "http://localhost:3000/websocket",
     SocketConstructor: WebSocket
 };
-var ddp = new DDP(options);
+const ddp = new DDP(options);
 
-ddp.on("connected", function () {
+ddp.on("connected", () => {
     console.log("Connected");
 });
 
-var subId = ddp.sub("mySubscription");
-ddp.on("ready", function (message) {
+const subId = ddp.sub("mySubscription");
+ddp.on("ready", message => {
     if (message.id === subId) {
         console.log("mySubscription ready");
     }
 });
-ddp.on("added", function (message) {
+ddp.on("added", message => {
     console.log(message.collection);
 });
 
-var myLoginParams = {
+const myLoginParams = {
     user: {
         email: "user@example.com"
     },
     password: "hunter2"
 };
-var methodId = ddp.method("login", [myLoginParams]);
-ddp.on("result", function (message) {
+const methodId = ddp.method("login", [myLoginParams]);
+ddp.on("result", message => {
     if (message.id === methodId && !message.error) {
         console.log("Logged in!");
     }
 });
 ```
 
-##Tests
+## Tests and coverage
 
-`npm test` to run tests. Coverage reports are generated in the `coverage/`
-directory.
+`npm test` to run tests. `npm run coverage` to generate overage reports, which
+will be written into the `coverage/` directory.
 
-##Public API
+## Public API
 
-###new DDP(options)
+### new DDP(options)
 
 Creates a new DDP instance. After being constructed, the instance will
 establish a connection with the DDP server and will try to maintain it open.
 
-####Arguments
+#### Arguments
 
 - `options` **object** *required*
 
@@ -98,69 +93,69 @@ Available options are:
   library.  On the server you can use whichever library implements the
   websocket protocol (e.g.  faye-websocket).
 
-####Returns
+#### Returns
 
 A new DDP instance, which is also an `EventEmitter` instance.
 
 ---
 
-###DDP.method(name, params)
+### DDP.method(name, params)
 
 Calls a remote method.
 
-####Arguments
+#### Arguments
 
 - `name` **string** *required*: name of the method to call.
 
 - `params` **array** *required*: parameters to pass to the remote method. Pass
   an empty array if you do not wish to pass any parameters.
 
-####Returns
+#### Returns
 
 The unique `id` (string) corresponding to the method call.
 
 ---
 
-###DDP.sub(name, params)
+### DDP.sub(name, params)
 
 Subscribes to a server publication.
 
-####Arguments
+#### Arguments
 
 - `name` **string** *required*: name of the server publication.
 
 - `params` **array** *required*: parameters to pass to the server publish
   function. Pass an empty array if you do not wish to pass any parameters.
 
-####Returns
+#### Returns
 
 The unique `id` (string) corresponding to the subscription call.
 
 ---
 
-###DDP.unsub(id)
+### DDP.unsub(id)
 
 Unsubscribes to a previously-subscribed server publication.
 
-####Arguments
+#### Arguments
 
 - `id` **string** *required*: id of the subscription.
 
-####Returns
+#### Returns
 
 The `id` corresponding to the subscription call (not of much use, but I return
 it for consistency).
 
-##Public events
+## Public events
 
-###Connection events
+### Connection events
 
 - `connected`: emitted with no arguments when the DDP connection is
   established.
 
 - `disconnected`: emitted with no arguments when the DDP connection drops.
 
-###Subscription events
+### Subscription events
 
 All the following events are emitted with one argument, the parsed DDP message.
 Further details can be found [on the DDP spec
@@ -172,7 +167,7 @@ page](https://github.com/meteor/meteor/blob/devel/packages/ddp/DDP.md).
 - `changed`
 - `removed`
 
-###Method events
+### Method events
 
 All the following events are emitted with one argument, the parsed DDP message.
 Further details can be found [on the DDP spec
