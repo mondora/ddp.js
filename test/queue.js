@@ -7,33 +7,33 @@ chai.use(sinonChai);
 
 import Queue from "../src/queue";
 
-describe("`Queue` class", function () {
+describe("`Queue` class", () => {
 
-    describe("`push` method", function () {
+    describe("`push` method", () => {
 
-        it("adds an element to the queue", function () {
-            var q = new Queue();
+        it("adds an element to the queue", () => {
+            const q = new Queue();
             q.process = sinon.spy();
-            var element = {};
+            const element = {};
             q.push(element);
             expect(q.queue).to.include(element);
         });
 
-        it("triggers processing", function () {
-            var q = new Queue();
+        it("triggers processing", () => {
+            const q = new Queue();
             q.process = sinon.spy();
-            var element = {};
+            const element = {};
             q.push(element);
             expect(q.process).to.have.callCount(1);
         });
 
     });
 
-    describe("`process` method", function () {
+    describe("`process` method", () => {
 
-        it("calls the consumer (asynchronously) on each element of the queue", function (done) {
-            var consumer = sinon.spy(() => true);
-            var q = new Queue(consumer);
+        it("calls the consumer (asynchronously) on each element of the queue", done => {
+            const consumer = sinon.spy(() => true);
+            const q = new Queue(consumer);
             q.queue = [0, 1, 2];
             q.process();
             // Test the asynchronicity
@@ -46,9 +46,9 @@ describe("`Queue` class", function () {
             }, done);
         });
 
-        it("removes elements from the queue", function (done) {
-            var consumer = sinon.spy(() => true);
-            var q = new Queue(consumer);
+        it("removes elements from the queue", done => {
+            const consumer = sinon.spy(() => true);
+            const q = new Queue(consumer);
             q.queue = [0, 1, 2];
             q.process();
             takeTen(() => {
@@ -56,9 +56,9 @@ describe("`Queue` class", function () {
             }, done);
         });
 
-        it("doesn't remove elements from the queue if the consumer doesn't ack", function (done) {
-            var consumer = sinon.spy(() => false);
-            var q = new Queue(consumer);
+        it("doesn't remove elements from the queue if the consumer doesn't ack", done => {
+            const consumer = sinon.spy(() => false);
+            const q = new Queue(consumer);
             q.queue = [0, 1, 2];
             q.process();
             takeTen(() => {
@@ -70,12 +70,12 @@ describe("`Queue` class", function () {
 
     });
 
-    describe("`empty` method", function () {
+    describe("`empty` method", () => {
 
-        it("empties the queue", function () {
-            var q = new Queue();
+        it("empties the queue", () => {
+            const q = new Queue();
             q.process = sinon.spy();
-            var element = {};
+            const element = {};
             q.push(element);
             expect(q.queue.length).to.equal(1);
             q.empty();

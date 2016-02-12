@@ -15,46 +15,46 @@ const options = {
     SocketConstructor: SocketConstructorMock
 };
 
-describe("`DDP` class", function () {
+describe("`DDP` class", () => {
 
-    describe("`constructor` method", function () {
+    describe("`constructor` method", () => {
 
-        beforeEach(function () {
+        beforeEach(() => {
             sinon.stub(Socket.prototype, "on");
             sinon.stub(Socket.prototype, "connect");
         });
 
-        afterEach(function () {
+        afterEach(() => {
             Socket.prototype.on.restore();
             Socket.prototype.connect.restore();
         });
 
-        it("instantiates a `Socket`", function () {
-            var ddp = new DDP(options);
+        it("instantiates a `Socket`", () => {
+            const ddp = new DDP(options);
             expect(ddp.socket).to.be.an.instanceOf(Socket);
         });
 
-        it("registers handlers for `socket` events", function () {
-            var ddp = new DDP(options);
+        it("registers handlers for `socket` events", () => {
+            const ddp = new DDP(options);
             expect(ddp.socket.on).to.have.always.been.calledWithMatch(
                 sinon.match.string,
                 sinon.match.func
             );
         });
 
-        it("calls `socket.connect`", function () {
-            var ddp = new DDP(options);
+        it("initiates the connection (by calling `socket.connect`)", () => {
+            const ddp = new DDP(options);
             expect(ddp.socket.connect).to.have.callCount(1);
         });
 
     });
 
-    describe("`method` method", function () {
+    describe("`method` method", () => {
 
-        it("sends a DDP `method` message", function () {
-            var ddp = new DDP(options);
+        it("sends a DDP `method` message", () => {
+            const ddp = new DDP(options);
             ddp.messageQueue.push = sinon.spy();
-            var id = ddp.method("name", ["param"]);
+            const id = ddp.method("name", ["param"]);
             expect(ddp.messageQueue.push).to.have.been.calledWith({
                 msg: "method",
                 id: id,
@@ -63,21 +63,21 @@ describe("`DDP` class", function () {
             });
         });
 
-        it("returns the method's `id`", function () {
-            var ddp = new DDP(options);
+        it("returns the method's `id`", () => {
+            const ddp = new DDP(options);
             ddp.messageQueue.push = sinon.spy();
-            var id = ddp.method("name", ["param"]);
+            const id = ddp.method("name", ["param"]);
             expect(id).to.be.a("string");
         });
 
     });
 
-    describe("`sub` method", function () {
+    describe("`sub` method", () => {
 
-        it("sends a DDP `sub` message", function () {
-            var ddp = new DDP(options);
+        it("sends a DDP `sub` message", () => {
+            const ddp = new DDP(options);
             ddp.messageQueue.push = sinon.spy();
-            var id = ddp.sub("name", ["param"]);
+            const id = ddp.sub("name", ["param"]);
             expect(ddp.messageQueue.push).to.have.been.calledWith({
                 msg: "sub",
                 id: id,
@@ -86,41 +86,41 @@ describe("`DDP` class", function () {
             });
         });
 
-        it("returns the sub's `id`", function () {
-            var ddp = new DDP(options);
+        it("returns the sub's `id`", () => {
+            const ddp = new DDP(options);
             ddp.messageQueue.push = sinon.spy();
-            var id = ddp.sub("name", ["param"]);
+            const id = ddp.sub("name", ["param"]);
             expect(id).to.be.a("string");
         });
 
     });
 
-    describe("`unsub` method", function () {
+    describe("`unsub` method", () => {
 
-        it("sends a DDP `unsub` message", function () {
-            var ddp = new DDP(options);
+        it("sends a DDP `unsub` message", () => {
+            const ddp = new DDP(options);
             ddp.messageQueue.push = sinon.spy();
-            var id = ddp.unsub("id");
+            const id = ddp.unsub("id");
             expect(ddp.messageQueue.push).to.have.been.calledWith({
                 msg: "unsub",
                 id: id
             });
         });
 
-        it("returns the sub's `id`", function () {
-            var ddp = new DDP(options);
+        it("returns the sub's `id`", () => {
+            const ddp = new DDP(options);
             ddp.messageQueue.push = sinon.spy();
-            var id = ddp.unsub("id");
+            const id = ddp.unsub("id");
             expect(id).to.be.a("string");
             expect(id).to.equal("id");
         });
 
     });
 
-    describe("`socket` `open` handler", function () {
+    describe("`socket` `open` handler", () => {
 
-        it("sends the `connect` DDP message", function (done) {
-            var ddp = new DDP(options);
+        it("sends the `connect` DDP message", done => {
+            const ddp = new DDP(options);
             ddp.socket.send = sinon.spy();
             ddp.socket.emit("open");
             takeTen(() => {
@@ -134,18 +134,18 @@ describe("`DDP` class", function () {
 
     });
 
-    describe("`socket` `close` handler", function () {
+    describe("`socket` `close` handler", () => {
 
-        before(function () {
+        before(() => {
             sinon.spy(global, "setTimeout");
         });
 
-        after(function () {
+        after(() => {
             global.setTimeout.restore();
         });
 
-        it("emits the `disconnected` event", function (done) {
-            var ddp = new DDP(options);
+        it("emits the `disconnected` event", done => {
+            const ddp = new DDP(options);
             ddp.emit = sinon.spy();
             ddp.socket.emit("close");
             takeTen(() => {
@@ -153,8 +153,8 @@ describe("`DDP` class", function () {
             }, done);
         });
 
-        it("sets the status to `disconnected`", function (done) {
-            var ddp = new DDP(options);
+        it("sets the status to `disconnected`", done => {
+            const ddp = new DDP(options);
             ddp.status = "connected";
             ddp.emit = sinon.spy();
             ddp.socket.emit("close");
@@ -163,10 +163,10 @@ describe("`DDP` class", function () {
             }, done);
         });
 
-        it("schedules a reconnection", function (done) {
-            var ddp = new DDP(options);
+        it("schedules a reconnection", done => {
+            const ddp = new DDP(options);
             ddp.socket.emit("close");
-            var RECONNECT_INTERVAL = 10000;
+            const RECONNECT_INTERVAL = 10000;
             takeTen(() => {
                 expect(global.setTimeout).to.have.been.calledWithMatch(
                     sinon.match.func,
@@ -177,10 +177,10 @@ describe("`DDP` class", function () {
 
     });
 
-    describe("`socket` `message:in` handler", function () {
+    describe("`socket` `message:in` handler", () => {
 
-        it("responds to `ping` DDP messages", function (done) {
-            var ddp = new DDP(options);
+        it("responds to `ping` DDP messages", done => {
+            const ddp = new DDP(options);
             ddp.socket.send = sinon.spy();
             ddp.socket.emit("message:in", {
                 id: "id",
@@ -194,8 +194,8 @@ describe("`DDP` class", function () {
             }, done);
         });
 
-        it("triggers `messageQueue` processing upon connection", function (done) {
-            var ddp = new DDP(options);
+        it("triggers `messageQueue` processing upon connection", done => {
+            const ddp = new DDP(options);
             ddp.emit = sinon.spy();
             ddp.messageQueue.process = sinon.spy();
             ddp.socket.emit("message:in", {msg: "connected"});
@@ -204,8 +204,8 @@ describe("`DDP` class", function () {
             }, done);
         });
 
-        it("sets the status to `connected` upon connection", function (done) {
-            var ddp = new DDP(options);
+        it("sets the status to `connected` upon connection", done => {
+            const ddp = new DDP(options);
             ddp.emit = sinon.spy();
             ddp.socket.emit("message:in", {msg: "connected"});
             takeTen(() => {
@@ -213,10 +213,10 @@ describe("`DDP` class", function () {
             }, done);
         });
 
-        it("emits public DDP messages as events", function (done) {
-            var ddp = new DDP(options);
+        it("emits public DDP messages as events", done => {
+            const ddp = new DDP(options);
             ddp.emit = sinon.spy();
-            var message = {
+            const message = {
                 id: "id",
                 msg: "result"
             };
@@ -226,10 +226,10 @@ describe("`DDP` class", function () {
             }, done);
         });
 
-        it("ignores unknown (or non public) DDP messages", function (done) {
-            var ddp = new DDP(options);
+        it("ignores unknown (or non public) DDP messages", done => {
+            const ddp = new DDP(options);
             ddp.emit = sinon.spy();
-            var message = {
+            const message = {
                 id: "id",
                 msg: "not-a-ddp-message"
             };
@@ -241,19 +241,19 @@ describe("`DDP` class", function () {
 
     });
 
-    describe("`messageQueue` consumer", function () {
+    describe("`messageQueue` consumer", () => {
 
-        it("acks if `status` is `connected`", function () {
-            var ddp = new DDP(options);
+        it("acks if `status` is `connected`", () => {
+            const ddp = new DDP(options);
             ddp.status = "connected";
-            var ack = ddp.messageQueue.consumer({});
+            const ack = ddp.messageQueue.consumer({});
             expect(ack).to.equal(true);
         });
 
-        it("doesn't ack if `status` is `disconnected`", function () {
-            var ddp = new DDP(options);
+        it("doesn't ack if `status` is `disconnected`", () => {
+            const ddp = new DDP(options);
             ddp.status = "disconnected";
-            var ack = ddp.messageQueue.consumer({});
+            const ack = ddp.messageQueue.consumer({});
             expect(ack).to.equal(false);
         });
 

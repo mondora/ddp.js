@@ -17,10 +17,7 @@ const RECONNECT_INTERVAL = 10000;
 export default class DDP extends EventEmitter {
 
     emit () {
-        var args = arguments;
-        setTimeout(() => {
-            super.emit.apply(this, args);
-        }, 0);
+        setTimeout(super.emit.bind(this, ...arguments), 0);
     }
 
     constructor (options) {
@@ -29,7 +26,7 @@ export default class DDP extends EventEmitter {
 
         this.status = "disconnected";
 
-        this.messageQueue = new Queue((message) => {
+        this.messageQueue = new Queue(message => {
             if (this.status === "connected") {
                 this.socket.send(message);
                 return true;
@@ -58,7 +55,7 @@ export default class DDP extends EventEmitter {
             setTimeout(this.socket.connect.bind(this.socket), RECONNECT_INTERVAL);
         });
 
-        this.socket.on("message:in", (message) => {
+        this.socket.on("message:in", message => {
             if (message.msg === "connected") {
                 this.status = "connected";
                 this.messageQueue.process();
@@ -77,7 +74,7 @@ export default class DDP extends EventEmitter {
     }
 
     method (name, params) {
-        var id = uniqueId();
+        const id = uniqueId();
         this.messageQueue.push({
             msg: "method",
             id: id,
@@ -88,7 +85,7 @@ export default class DDP extends EventEmitter {
     }
 
     sub (name, params) {
-        var id = uniqueId();
+        const id = uniqueId();
         this.messageQueue.push({
             msg: "sub",
             id: id,
