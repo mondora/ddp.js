@@ -1,6 +1,6 @@
 ## 2.0.0 (February 12, 2016)
 
-Distribute as lib instead of bundle.
+Distribute as individual modules in `lib` instead of bundle in `dist`.
 
 ## 1.1.0 (July 11, 2015)
 

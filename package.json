@@ -2,7 +2,7 @@
   "name": "ddp.js",
   "version": "1.1.0",
   "description": "ddp javascript client",
-  "main": "dist/ddp.js",
+  "main": "lib/ddp.js",
   "scripts": {
     "build": "babel src --out-dir lib",
     "clean": "rimraf lib coverage",
