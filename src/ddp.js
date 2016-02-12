@@ -52,7 +52,7 @@ export default class DDP extends EventEmitter {
             this.messageQueue.empty();
             this.emit("disconnected");
             // Schedule a reconnection
-            setTimeout(this.socket.connect.bind(this.socket), RECONNECT_INTERVAL);
+            setTimeout(this.socket.open.bind(this.socket), RECONNECT_INTERVAL);
         });
 
         this.socket.on("message:in", message => {
@@ -69,8 +69,16 @@ export default class DDP extends EventEmitter {
             }
         });
 
-        this.socket.connect();
+        this.connect();
 
+    }
+
+    connect () {
+        this.socket.open();
+    }
+
+    disconnect () {
+        this.socket.close();
     }
 
     method (name, params) {

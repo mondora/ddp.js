@@ -19,7 +19,7 @@ export default class Socket extends EventEmitter {
         this.emit("message:out", JSON.parse(message));
     }
 
-    connect () {
+    open () {
 
         this.rawSocket = new this.SocketConstructor(this.endpoint);
 
@@ -45,6 +45,10 @@ export default class Socket extends EventEmitter {
             this.emit("message:in", object);
         };
 
+    }
+
+    close () {
+        this.rawSocket.close();
     }
 
 }

@@ -175,6 +175,37 @@ Unsubscribes to a previously-subscribed server publication.
 The `id` corresponding to the subscription call (not of much use, but I return
 it for consistency).
 
+---
+
+### DDP.connect()
+
+Connects to the ddp server. The method is called automatically by the class
+constructor, so there generally should be no need for the developer to call it
+themselves.
+
+#### Arguments
+
+None
+
+#### Returns
+
+None
+
+---
+
+### DDP.disconnect()
+
+Disconnects from the ddp server by closing the `WebSocket` connection. You can
+listen on the `disconnected` event to be notified of the disconnection.
+
+#### Arguments
+
+None
+
+#### Returns
+
+None
+
 ## Public events
 
 ### Connection events

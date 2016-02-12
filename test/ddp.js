@@ -10,6 +10,7 @@ import Socket from "../src/socket";
 
 class SocketConstructorMock {
     send () {}
+    close () {}
 }
 const options = {
     SocketConstructor: SocketConstructorMock
@@ -21,12 +22,12 @@ describe("`DDP` class", () => {
 
         beforeEach(() => {
             sinon.stub(Socket.prototype, "on");
-            sinon.stub(Socket.prototype, "connect");
+            sinon.stub(Socket.prototype, "open");
         });
 
         afterEach(() => {
             Socket.prototype.on.restore();
-            Socket.prototype.connect.restore();
+            Socket.prototype.open.restore();
         });
 
         it("instantiates a `Socket`", () => {
@@ -42,9 +43,9 @@ describe("`DDP` class", () => {
             );
         });
 
-        it("initiates the connection (by calling `socket.connect`)", () => {
+        it("opens a connection to the server (by calling `socket.open`)", () => {
             const ddp = new DDP(options);
-            expect(ddp.socket.connect).to.have.callCount(1);
+            expect(ddp.socket.open).to.have.callCount(1);
         });
 
     });
@@ -113,6 +114,43 @@ describe("`DDP` class", () => {
             const id = ddp.unsub("id");
             expect(id).to.be.a("string");
             expect(id).to.equal("id");
+        });
+
+    });
+
+    describe("`connect` method", () => {
+
+        beforeEach(() => {
+            sinon.stub(Socket.prototype, "open");
+        });
+
+        afterEach(() => {
+            Socket.prototype.open.restore();
+        });
+
+        it("opens the WebSocket connection", () => {
+            const ddp = new DDP(options);
+            Socket.prototype.open.reset();
+            ddp.connect();
+            expect(ddp.socket.open).to.have.callCount(1);
+        });
+
+    });
+
+    describe("`disconnect` method", () => {
+
+        beforeEach(() => {
+            sinon.stub(Socket.prototype, "close");
+        });
+
+        afterEach(() => {
+            Socket.prototype.close.restore();
+        });
+
+        it("closes the WebSocket connection", () => {
+            const ddp = new DDP(options);
+            ddp.disconnect();
+            expect(ddp.socket.close).to.have.callCount(1);
         });
 
     });

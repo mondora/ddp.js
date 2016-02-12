@@ -49,17 +49,17 @@ describe("`Socket` class", () => {
 
     });
 
-    describe("`connect` method", () => {
+    describe("`open` method", () => {
 
         it("instantiates a `SocketConstructor`", () => {
             const socket = new Socket(SocketConstructorMock);
-            socket.connect();
+            socket.open();
             expect(socket.rawSocket).to.be.an.instanceOf(SocketConstructorMock);
         });
 
         it("registers handlers for `rawSocket` events", () => {
             const socket = new Socket(SocketConstructorMock);
-            socket.connect();
+            socket.open();
             expect(socket.rawSocket.onopen).to.be.a("function");
             expect(socket.rawSocket.onclose).to.be.a("function");
             expect(socket.rawSocket.onerror).to.be.a("function");
@@ -73,7 +73,7 @@ describe("`Socket` class", () => {
         it("emits an `open` event", () => {
             const socket = new Socket(SocketConstructorMock);
             socket.emit = sinon.spy();
-            socket.connect();
+            socket.open();
             socket.rawSocket.onopen();
             expect(socket.emit).to.have.been.calledWith("open");
         });
@@ -85,7 +85,7 @@ describe("`Socket` class", () => {
         it("emits a `close` event", () => {
             const socket = new Socket(SocketConstructorMock);
             socket.emit = sinon.spy();
-            socket.connect();
+            socket.open();
             socket.rawSocket.onclose();
             expect(socket.emit).to.have.been.calledWith("close");
         });
@@ -98,7 +98,7 @@ describe("`Socket` class", () => {
             const socket = new Socket(SocketConstructorMock);
             socket.emit = sinon.spy();
             const error = {};
-            socket.connect();
+            socket.open();
             socket.rawSocket.onerror(error);
             expect(socket.emit).to.have.been.calledWith("error", error);
         });
@@ -110,7 +110,7 @@ describe("`Socket` class", () => {
         it("parses message data into an object", () => {
             const socket = new Socket(SocketConstructorMock);
             sinon.stub(JSON, "parse");
-            socket.connect();
+            socket.open();
             socket.rawSocket.onmessage({data: "message"});
             expect(JSON.parse).to.have.been.calledWith("message");
             JSON.parse.restore();
@@ -119,7 +119,7 @@ describe("`Socket` class", () => {
         it("ignores malformed messages", () => {
             const socket = new Socket(SocketConstructorMock);
             sinon.stub(JSON, "parse").throws();
-            socket.connect();
+            socket.open();
             expect(socket.rawSocket.onmessage).not.to.throw();
             JSON.parse.restore();
         });
@@ -127,7 +127,7 @@ describe("`Socket` class", () => {
         it("emits `message:in` events", () => {
             const socket = new Socket(SocketConstructorMock);
             socket.emit = sinon.spy();
-            socket.connect();
+            socket.open();
             socket.rawSocket.onmessage({data: JSON.stringify({a: "a"})});
             expect(socket.emit).to.have.been.calledWith("message:in", {a: "a"});
         });
