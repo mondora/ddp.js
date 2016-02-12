@@ -107,12 +107,27 @@ Calls a remote method.
 
 - `name` **string** *required*: name of the method to call.
 
-- `params` **array** *required*: parameters to pass to the remote method. Pass
-  an empty array if you do not wish to pass any parameters.
+- `params` **array** *required*: array of parameters to pass to the remote
+  method. Pass an empty array if you do not wish to pass any parameters.
 
 #### Returns
 
 The unique `id` (string) corresponding to the method call.
+
+#### Example usage
+
+Server code:
+```js
+Meteor.methods({
+    myMethod (param_0, param_1, param_2) {
+        /* ... */
+    }
+});
+```
+Client code:
+```js
+const methodCallId = ddp.method("myMethod", [param_0, param_1, param_2]);
+```
 
 ---
 
@@ -124,12 +139,26 @@ Subscribes to a server publication.
 
 - `name` **string** *required*: name of the server publication.
 
-- `params` **array** *required*: parameters to pass to the server publish
-  function. Pass an empty array if you do not wish to pass any parameters.
+- `params` **array** *required*: array of parameters to pass to the server
+  publish function. Pass an empty array if you do not wish to pass any
+  parameters.
 
 #### Returns
 
 The unique `id` (string) corresponding to the subscription call.
+
+#### Example usage
+
+Server code:
+```js
+Meteor.publish("myPublication", (param_0, param_1, param_2) {
+    /* ... */
+});
+```
+Client code:
+```js
+const subscriptionId = ddp.sub("myPublication", [param_0, param_1, param_2]);
+```
 
 ---
 
