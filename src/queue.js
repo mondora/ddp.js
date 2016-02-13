@@ -18,15 +18,13 @@ export default class Queue {
     }
 
     process () {
-        setTimeout(() => {
-            if (this.queue.length !== 0) {
-                const ack = this.consumer(this.queue[0]);
-                if (ack) {
-                    this.queue.shift();
-                    this.process();
-                }
+        if (this.queue.length !== 0) {
+            const ack = this.consumer(this.queue[0]);
+            if (ack) {
+                this.queue.shift();
+                this.process();
             }
-        }, 0);
+        }
     }
 
     empty () {

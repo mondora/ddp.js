@@ -1,7 +1,6 @@
 import chai, {expect} from "chai";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
-import takeTen from "./take-ten";
 
 chai.use(sinonChai);
 
@@ -31,41 +30,33 @@ describe("`Queue` class", () => {
 
     describe("`process` method", () => {
 
-        it("calls the consumer (asynchronously) on each element of the queue", done => {
+        it("calls the consumer on each element of the queue", () => {
             const consumer = sinon.spy(() => true);
             const q = new Queue(consumer);
             q.queue = [0, 1, 2];
             q.process();
-            // Test the asynchronicity
-            expect(consumer).to.have.callCount(0);
-            takeTen(() => {
-                expect(consumer).to.have.been.calledWith(0);
-                expect(consumer).to.have.been.calledWith(1);
-                expect(consumer).to.have.been.calledWith(2);
-                expect(consumer).to.have.callCount(3);
-            }, done);
+            expect(consumer).to.have.been.calledWith(0);
+            expect(consumer).to.have.been.calledWith(1);
+            expect(consumer).to.have.been.calledWith(2);
+            expect(consumer).to.have.callCount(3);
         });
 
-        it("removes elements from the queue", done => {
+        it("removes elements from the queue", () => {
             const consumer = sinon.spy(() => true);
             const q = new Queue(consumer);
             q.queue = [0, 1, 2];
             q.process();
-            takeTen(() => {
-                expect(q.queue.length).to.equal(0);
-            }, done);
+            expect(q.queue.length).to.equal(0);
         });
 
-        it("doesn't remove elements from the queue if the consumer doesn't ack", done => {
+        it("doesn't remove elements from the queue if the consumer doesn't ack", () => {
             const consumer = sinon.spy(() => false);
             const q = new Queue(consumer);
             q.queue = [0, 1, 2];
             q.process();
-            takeTen(() => {
-                expect(consumer).to.have.been.calledWith(0);
-                expect(consumer).to.have.callCount(1);
-                expect(q.queue.length).to.equal(3);
-            }, done);
+            expect(consumer).to.have.been.calledWith(0);
+            expect(consumer).to.have.callCount(1);
+            expect(q.queue.length).to.equal(3);
         });
 
     });
