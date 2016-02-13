@@ -99,6 +99,14 @@ Available options are:
   library.  On the server you can use whichever library implements the
   websocket protocol (e.g.  faye-websocket).
 
+- `autoConnect` **boolean** *optional* [default: `true`]: whether to establish
+  the connection to the server upon instantiation. When `false`, one can
+  manually establish the connection with the `connect` method.
+
+- `autoReconnect` **boolean** *optional* [default: `true`]: whether to try to
+  reconnect to the server when the socket connection closes, unless the closing
+  was initiated by a call to the `disconnect` method.
+
 #### Returns
 
 A new DDP instance, which is also an `EventEmitter` instance.
@@ -186,7 +194,8 @@ it for consistency).
 ### DDP.connect()
 
 Connects to the ddp server. The method is called automatically by the class
-constructor, so there generally should be no need for the developer to call it
+constructor if the `autoConnect` option is set to `true` (default behaviour).
+So there generally should be no need for the developer to call the method
 themselves.
 
 #### Arguments
