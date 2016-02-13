@@ -3,7 +3,14 @@ language: node_js
 node_js:
   - 5
 
+before_install:
+  - curl https://install.meteor.com | /bin/sh
+
+before_script:
+  - npm run start-meteor & sleep 30
+
 script:
   - npm run lint
   - npm run coverage
   - npm run coveralls
+  - npm run e2e-test
