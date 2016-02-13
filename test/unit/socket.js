@@ -4,7 +4,7 @@ import sinonChai from "sinon-chai";
 
 chai.use(sinonChai);
 
-import Socket from "../src/socket";
+import Socket from "../../src/socket";
 
 class SocketConstructorMock {}
 
@@ -64,6 +64,18 @@ describe("`Socket` class", () => {
             expect(socket.rawSocket.onclose).to.be.a("function");
             expect(socket.rawSocket.onerror).to.be.a("function");
             expect(socket.rawSocket.onmessage).to.be.a("function");
+        });
+
+    });
+
+    describe("`close` method", () => {
+
+        it("closes the `rawSocket`", () => {
+            const socket = new Socket(SocketConstructorMock);
+            socket.open();
+            socket.rawSocket.close = sinon.spy();
+            socket.close();
+            expect(socket.rawSocket.close).to.have.callCount(1);
         });
 
     });

@@ -24,9 +24,11 @@ export default class Socket extends EventEmitter {
         this.rawSocket = new this.SocketConstructor(this.endpoint);
 
         /*
-        *   The `open`, `error` and `close` events are simply proxy-ed to `_socket`.
-        *   The `message` event is instead parsed into a js object (if possible) and
-        *   then passed as a parameter of the `message:in` event
+        *   Calls to `onopen`, `onerror` and `onclose` directly trigger the
+        *   `open`, `error` and `close` events on the `Socket` instance.
+        *   Calls to `onmessage` instead trigger a `message:in` event on the
+        *   `Socket` instance only once the message (first parameter to
+        *   `onmessage`) has been successfully parsed into a javascript object.
         */
 
         this.rawSocket.onopen = () => this.emit("open");
@@ -41,7 +43,8 @@ export default class Socket extends EventEmitter {
                 return;
             }
             // Outside the try-catch block as it must only catch JSON parsing
-            // errors, not errors that may occur inside a "message:in" event handler
+            // errors, not errors that may occur inside a "message:in" event
+            // handler
             this.emit("message:in", object);
         };
 

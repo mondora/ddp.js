@@ -1,12 +1,11 @@
 import chai, {expect} from "chai";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
-import takeTen from "./take-ten";
 
 chai.use(sinonChai);
 
-import DDP from "../src/ddp";
-import Socket from "../src/socket";
+import DDP from "../../src/ddp";
+import Socket from "../../src/socket";
 
 class SocketConstructorMock {
     send () {}
@@ -24,7 +23,6 @@ describe("`DDP` class", () => {
             sinon.stub(Socket.prototype, "on");
             sinon.stub(Socket.prototype, "open");
         });
-
         afterEach(() => {
             Socket.prototype.on.restore();
             Socket.prototype.open.restore();
@@ -43,9 +41,17 @@ describe("`DDP` class", () => {
             );
         });
 
-        it("opens a connection to the server (by calling `socket.open`)", () => {
+        it("opens a connection to the server (by calling `socket.open`) unless `options.autoConnect === false`", () => {
             const ddp = new DDP(options);
             expect(ddp.socket.open).to.have.callCount(1);
+        });
+
+        it("does not open a connection when `options.autoConnect === false`", () => {
+            const ddp = new DDP({
+                ...options,
+                autoConnect: false
+            });
+            expect(ddp.socket.open).to.have.callCount(0);
         });
 
     });
@@ -123,7 +129,6 @@ describe("`DDP` class", () => {
         beforeEach(() => {
             sinon.stub(Socket.prototype, "open");
         });
-
         afterEach(() => {
             Socket.prototype.open.restore();
         });
@@ -142,7 +147,6 @@ describe("`DDP` class", () => {
         beforeEach(() => {
             sinon.stub(Socket.prototype, "close");
         });
-
         afterEach(() => {
             Socket.prototype.close.restore();
         });
@@ -153,105 +157,117 @@ describe("`DDP` class", () => {
             expect(ddp.socket.close).to.have.callCount(1);
         });
 
+        it("sets the `autoReconnect` flag to false", () => {
+            const ddp = new DDP(options);
+            ddp.disconnect();
+            expect(ddp.autoReconnect).to.equal(false);
+        });
+
     });
 
     describe("`socket` `open` handler", () => {
 
-        it("sends the `connect` DDP message", done => {
+        beforeEach(() => {
+            sinon.stub(global, "setTimeout", fn => fn());
+        });
+        afterEach(() => {
+            global.setTimeout.restore();
+        });
+
+        it("sends the `connect` DDP message", () => {
             const ddp = new DDP(options);
             ddp.socket.send = sinon.spy();
             ddp.socket.emit("open");
-            takeTen(() => {
-                expect(ddp.socket.send).to.have.been.calledWith({
-                    msg: "connect",
-                    version: "1",
-                    support: ["1"]
-                });
-            }, done);
+            expect(ddp.socket.send).to.have.been.calledWith({
+                msg: "connect",
+                version: "1",
+                support: ["1"]
+            });
         });
 
     });
 
     describe("`socket` `close` handler", () => {
 
-        before(() => {
-            sinon.spy(global, "setTimeout");
+        beforeEach(() => {
+            sinon.stub(global, "setTimeout", fn => fn());
         });
-
-        after(() => {
+        afterEach(() => {
             global.setTimeout.restore();
         });
 
-        it("emits the `disconnected` event", done => {
+        it("emits the `disconnected` event", () => {
             const ddp = new DDP(options);
             ddp.emit = sinon.spy();
             ddp.socket.emit("close");
-            takeTen(() => {
-                expect(ddp.emit).to.have.been.calledWith("disconnected");
-            }, done);
+            expect(ddp.emit).to.have.been.calledWith("disconnected");
         });
 
-        it("sets the status to `disconnected`", done => {
+        it("sets the status to `disconnected`", () => {
             const ddp = new DDP(options);
             ddp.status = "connected";
             ddp.emit = sinon.spy();
             ddp.socket.emit("close");
-            takeTen(() => {
-                expect(ddp.status).to.equal("disconnected");
-            }, done);
+            expect(ddp.status).to.equal("disconnected");
         });
 
-        it("schedules a reconnection", done => {
+        it("schedules a reconnection unless `options.autoReconnect === false`", () => {
             const ddp = new DDP(options);
+            ddp.socket.open = sinon.spy();
             ddp.socket.emit("close");
-            const RECONNECT_INTERVAL = 10000;
-            takeTen(() => {
-                expect(global.setTimeout).to.have.been.calledWithMatch(
-                    sinon.match.func,
-                    RECONNECT_INTERVAL
-                );
-            }, done);
+            expect(ddp.socket.open).to.have.callCount(1);
+        });
+
+        it("doesn't schedule a reconnection when `options.autoReconnect === false`", () => {
+            const ddp = new DDP({
+                ...options,
+                autoReconnect: false
+            });
+            ddp.socket.open = sinon.spy();
+            ddp.socket.emit("close");
+            expect(ddp.socket.open).to.have.callCount(0);
         });
 
     });
 
     describe("`socket` `message:in` handler", () => {
 
-        it("responds to `ping` DDP messages", done => {
+        beforeEach(() => {
+            sinon.stub(global, "setTimeout", fn => fn());
+        });
+        afterEach(() => {
+            global.setTimeout.restore();
+        });
+
+        it("responds to `ping` DDP messages", () => {
             const ddp = new DDP(options);
             ddp.socket.send = sinon.spy();
             ddp.socket.emit("message:in", {
                 id: "id",
                 msg: "ping"
             });
-            takeTen(() => {
-                expect(ddp.socket.send).to.have.been.calledWith({
-                    id: "id",
-                    msg: "pong"
-                });
-            }, done);
+            expect(ddp.socket.send).to.have.been.calledWith({
+                id: "id",
+                msg: "pong"
+            });
         });
 
-        it("triggers `messageQueue` processing upon connection", done => {
+        it("triggers `messageQueue` processing upon connection", () => {
             const ddp = new DDP(options);
             ddp.emit = sinon.spy();
             ddp.messageQueue.process = sinon.spy();
             ddp.socket.emit("message:in", {msg: "connected"});
-            takeTen(() => {
-                expect(ddp.messageQueue.process).to.have.callCount(1);
-            }, done);
+            expect(ddp.messageQueue.process).to.have.callCount(1);
         });
 
-        it("sets the status to `connected` upon connection", done => {
+        it("sets the status to `connected` upon connection", () => {
             const ddp = new DDP(options);
             ddp.emit = sinon.spy();
             ddp.socket.emit("message:in", {msg: "connected"});
-            takeTen(() => {
-                expect(ddp.status).to.equal("connected");
-            }, done);
+            expect(ddp.status).to.equal("connected");
         });
 
-        it("emits public DDP messages as events", done => {
+        it("emits public DDP messages as events", () => {
             const ddp = new DDP(options);
             ddp.emit = sinon.spy();
             const message = {
@@ -259,12 +275,10 @@ describe("`DDP` class", () => {
                 msg: "result"
             };
             ddp.socket.emit("message:in", message);
-            takeTen(() => {
-                expect(ddp.emit).to.have.been.calledWith("result", message);
-            }, done);
+            expect(ddp.emit).to.have.been.calledWith("result", message);
         });
 
-        it("ignores unknown (or non public) DDP messages", done => {
+        it("ignores unknown (or non public) DDP messages", () => {
             const ddp = new DDP(options);
             ddp.emit = sinon.spy();
             const message = {
@@ -272,9 +286,7 @@ describe("`DDP` class", () => {
                 msg: "not-a-ddp-message"
             };
             ddp.socket.emit("message:in", message);
-            takeTen(() => {
-                expect(ddp.emit).to.have.callCount(0);
-            }, done);
+            expect(ddp.emit).to.have.callCount(0);
         });
 
     });

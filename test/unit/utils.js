@@ -1,6 +1,6 @@
 import {expect} from "chai";
 
-import {contains, uniqueId} from "../src/utils";
+import {contains, uniqueId} from "../../src/utils";
 
 describe("`utils` object", () => {
 

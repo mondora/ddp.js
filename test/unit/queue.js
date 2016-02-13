@@ -5,7 +5,7 @@ import takeTen from "./take-ten";
 
 chai.use(sinonChai);
 
-import Queue from "../src/queue";
+import Queue from "../../src/queue";
 
 describe("`Queue` class", () => {
 

@@ -6,12 +6,15 @@
   "scripts": {
     "build": "babel src --out-dir lib",
     "clean": "rimraf lib coverage",
-    "coverage": "babel-node $(npm bin)/isparta cover $(npm bin)/_mocha -- --recursive",
+    "coverage": "babel-node $(npm bin)/isparta cover $(npm bin)/_mocha -- --recursive test/unit",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "dev": "npm test -- --watch",
     "lint": "eslint src test",
     "prepublish": "npm run clean && npm run build",
-    "test": "mocha --compilers js:babel-core/register --recursive"
+    "test": "mocha --compilers js:babel-core/register --recursive test/unit",
+    "start-meteor": "cd test/server/ && meteor",
+    "e2e-test": "mocha --compilers js:babel-core/register --recursive test/e2e",
+    "e2e-dev": "npm run e2e-test -- --watch"
   },
   "repository": {
     "type": "git",
@@ -38,6 +41,7 @@
     "chai": "^3.5.0",
     "coveralls": "^2.11.6",
     "eslint": "^1.10.3",
+    "faye-websocket": "^0.10.0",
     "isparta": "^4.0.0",
     "mocha": "^2.4.5",
     "sinon": "^1.17.3",

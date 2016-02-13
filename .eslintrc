@@ -4,7 +4,8 @@
     "env": {
         "browser": true,
         "mocha": true,
-        "node": true
+        "node": true,
+        "meteor": true
     },
     "rules": {
         "brace-style": [2, "1tbs"],

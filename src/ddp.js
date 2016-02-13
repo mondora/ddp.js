@@ -26,6 +26,10 @@ export default class DDP extends EventEmitter {
 
         this.status = "disconnected";
 
+        // Default `autoConnect` and `autoReconnect` to true
+        this.autoConnect = (options.autoConnect !== false);
+        this.autoReconnect = (options.autoReconnect !== false);
+
         this.messageQueue = new Queue(message => {
             if (this.status === "connected") {
                 this.socket.send(message);
@@ -51,8 +55,10 @@ export default class DDP extends EventEmitter {
             this.status = "disconnected";
             this.messageQueue.empty();
             this.emit("disconnected");
-            // Schedule a reconnection
-            setTimeout(this.socket.open.bind(this.socket), RECONNECT_INTERVAL);
+            if (this.autoReconnect) {
+                // Schedule a reconnection
+                setTimeout(this.socket.open.bind(this.socket), RECONNECT_INTERVAL);
+            }
         });
 
         this.socket.on("message:in", message => {
@@ -69,7 +75,9 @@ export default class DDP extends EventEmitter {
             }
         });
 
-        this.connect();
+        if (this.autoConnect) {
+            this.connect();
+        }
 
     }
 
@@ -78,6 +86,12 @@ export default class DDP extends EventEmitter {
     }
 
     disconnect () {
+        /*
+        *   If `disconnect` is called, the caller likely doesn't want the
+        *   the instance to try to auto-reconnect. Therefore we set the
+        *   `autoReconnect` flag to false.
+        */
+        this.autoReconnect = false;
         this.socket.close();
     }
 

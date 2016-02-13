@@ -31,7 +31,7 @@ Or via bower
 ```js
 const DDP = require("ddp.js");
 const options = {
-    endpoint: "http://localhost:3000/websocket",
+    endpoint: "ws://localhost:3000/websocket",
     SocketConstructor: WebSocket
 };
 const ddp = new DDP(options);
@@ -42,7 +42,7 @@ ddp.on("connected", () => {
 
 const subId = ddp.sub("mySubscription");
 ddp.on("ready", message => {
-    if (message.id === subId) {
+    if (message.subs.includes(subId)) {
         console.log("mySubscription ready");
     }
 });
@@ -64,10 +64,16 @@ ddp.on("result", message => {
 });
 ```
 
-## Tests and coverage
+## Developing
 
-`npm test` to run tests. `npm run coverage` to generate overage reports, which
-will be written into the `coverage/` directory.
+After cloning the repository, install `npm` dependencies with `npm install`.
+Run `npm test` to run unit tests, or `npm run dev` to have `mocha` re-run your
+tests when source or test files change.
+
+To run e2e tests, first [install meteor](https://www.meteor.com/install). Then,
+start the meteor server with `npm run start-meteor`. Finally, run
+`npm run e2e-test` to run the e2e test suite, or `npm run e2e-dev` to have
+`mocha` re-run the suite when source or test files change.
 
 ## Public API
 
