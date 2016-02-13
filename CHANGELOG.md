@@ -2,6 +2,13 @@
 
 Distribute as individual modules in `lib` instead of bundle in `dist`.
 
+Added method to disconnect.
+
+Added options to control auto-connect and auto-reconnect behaviour. As it turns
+out they could indeed be useful, for instance when one wants to simulate a
+connection scenario (e.g. in stress tests) and needs to have fine-grained
+control on the lifecycle of the connection.
+
 ## 1.1.0 (July 11, 2015)
 
 Moved the code to use ES6. In the process, I also refactored it a bit to use
