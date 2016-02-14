@@ -1,3 +1,4 @@
+[![npm version](https://badge.fury.io/js/ddp.js.svg)](https://badge.fury.io/js/ddp.js)
 [![Build Status](https://travis-ci.org/mondora/ddp.js.svg?branch=master)](https://travis-ci.org/mondora/ddp.js)
 [![Coverage Status](https://img.shields.io/coveralls/mondora/ddp.js.svg)](https://coveralls.io/r/mondora/ddp.js?branch=master)
 [![Dependency Status](https://david-dm.org/mondora/ddp.js.svg)](https://david-dm.org/mondora/ddp.js)
@@ -18,13 +19,7 @@ The purpose of this library is:
 
 ## Install
 
-Via npm
-
     npm install ddp.js
-
-Or via bower
-
-    bower install ddp.js
 
 ## Example usage
 
