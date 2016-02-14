@@ -54,6 +54,24 @@ describe("`DDP` class", () => {
             expect(ddp.socket.open).to.have.callCount(0);
         });
 
+        it("sets the instance `reconnectInterval` to `options.reconnectInterval` if specified", () => {
+            const ddp = new DDP({
+                ...options,
+                reconnectInterval: 1,
+                autoConnect: false
+            });
+            expect(ddp.reconnectInterval).to.equal(1);
+        });
+
+        it("sets the instance `reconnectInterval` to a default value if `options.reconnectInterval` is not specified", () => {
+            const ddp = new DDP({
+                ...options,
+                autoConnect: false
+            });
+            expect(ddp.reconnectInterval).to.equal(10000);
+        });
+
+
     });
 
     describe("`method` method", () => {

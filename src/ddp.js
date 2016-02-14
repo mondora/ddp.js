@@ -12,7 +12,7 @@ const PUBLIC_EVENTS = [
     // Error messages
     "error"
 ];
-const RECONNECT_INTERVAL = 10000;
+const DEFAULT_RECONNECT_INTERVAL = 10000;
 
 export default class DDP extends EventEmitter {
 
@@ -29,6 +29,7 @@ export default class DDP extends EventEmitter {
         // Default `autoConnect` and `autoReconnect` to true
         this.autoConnect = (options.autoConnect !== false);
         this.autoReconnect = (options.autoReconnect !== false);
+        this.reconnectInterval = options.reconnectInterval || DEFAULT_RECONNECT_INTERVAL;
 
         this.messageQueue = new Queue(message => {
             if (this.status === "connected") {
@@ -57,7 +58,10 @@ export default class DDP extends EventEmitter {
             this.emit("disconnected");
             if (this.autoReconnect) {
                 // Schedule a reconnection
-                setTimeout(this.socket.open.bind(this.socket), RECONNECT_INTERVAL);
+                setTimeout(
+                    this.socket.open.bind(this.socket),
+                    this.reconnectInterval
+                );
             }
         });
 

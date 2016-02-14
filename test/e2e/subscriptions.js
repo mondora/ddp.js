@@ -7,6 +7,16 @@ describe("subscriptions", () => {
 
     describe("subscribing to a publication", () => {
 
+        const ddp = new DDP({
+            endpoint: "ws://localhost:3000/websocket",
+            SocketConstructor: Client
+        });
+
+        after(done => {
+            ddp.on("disconnected", () => done());
+            ddp.disconnect();
+        });
+
         it("sends a sub call to the server and receives server-sent scubscription events", done => {
             /*
             *   The test suceeds when the `ready` message for the echo
@@ -14,10 +24,6 @@ describe("subscriptions", () => {
             *   If the `ready` message is never received, the test times out
             *   and fails. Naturally, the test also fails if assertions fail.
             */
-            const ddp = new DDP({
-                endpoint: "ws://localhost:3000/websocket",
-                SocketConstructor: Client
-            });
             const subId = ddp.sub("echo", [0, 1, 2, 3, 4]);
             const collections = {};
             ddp.on("added", message => {
@@ -55,16 +61,22 @@ describe("subscriptions", () => {
 
     describe("unsubscribing from a publication", () => {
 
+        const ddp = new DDP({
+            endpoint: "ws://localhost:3000/websocket",
+            SocketConstructor: Client
+        });
+
+        after(done => {
+            ddp.on("disconnected", () => done());
+            ddp.disconnect();
+        });
+
         it("sends an unsub call to the server and receives a nosub unsubscriptions confirmation event", done => {
             /*
             *   The test suceeds when the `nosub` message for the echo
             *   subscription is received. If the `nosub` message is never
             *   received, the test times out and fails.
             */
-            const ddp = new DDP({
-                endpoint: "ws://localhost:3000/websocket",
-                SocketConstructor: Client
-            });
             const subId = ddp.sub("echo", [0, 1, 2, 3, 4]);
             ddp.on("ready", message => {
                 if (message.subs.indexOf(subId) === -1) {
@@ -84,6 +96,16 @@ describe("subscriptions", () => {
 
     describe("getting unsubscribed from a publication", () => {
 
+        const ddp = new DDP({
+            endpoint: "ws://localhost:3000/websocket",
+            SocketConstructor: Client
+        });
+
+        after(done => {
+            ddp.on("disconnected", () => done());
+            ddp.disconnect();
+        });
+
         it("receives a nosub unsubscriptions event", function (done) {
             /*
             *   The test suceeds when the `nosub` message for the echo
@@ -94,10 +116,6 @@ describe("subscriptions", () => {
             *   increase the test timeout to 3s to account for the delay.
             */
             this.timeout(3000);
-            const ddp = new DDP({
-                endpoint: "ws://localhost:3000/websocket",
-                SocketConstructor: Client
-            });
             const subId = ddp.sub("autoTerminating");
             var subReady = false;
             ddp.on("ready", message => {

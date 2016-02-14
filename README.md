@@ -107,6 +107,9 @@ Available options are:
   reconnect to the server when the socket connection closes, unless the closing
   was initiated by a call to the `disconnect` method.
 
+- `reconnectInterval` **number** *optional* [default: 10000]: the interval in ms
+  between reconnection attempts.
+
 #### Returns
 
 A new DDP instance, which is also an `EventEmitter` instance.
