@@ -32,7 +32,6 @@ describe("methods", () => {
                 try {
                     expect(message.result).to.deep.equal([0, 1, 2, 3, 4]);
                     done();
-                    return;
                 } catch (e) {
                     done(e);
                 }

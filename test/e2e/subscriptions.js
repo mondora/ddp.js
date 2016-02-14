@@ -50,7 +50,6 @@ describe("subscriptions", () => {
                         }
                     });
                     done();
-                    return;
                 } catch (e) {
                     done(e);
                 }
@@ -131,7 +130,6 @@ describe("subscriptions", () => {
                     // Ensure the subscription got marked as ready.
                     expect(subReady).to.equal(true);
                     done();
-                    return;
                 } catch (e) {
                     done(e);
                 }

@@ -27,7 +27,7 @@ describe("connection", () => {
 
     describe("connecting", () => {
 
-        it("a connection is established on instantiation unless `options.autoConnect === false`", done => {
+        it("a connection is established on instantiation unless `autoConnect === false`", done => {
             /*
             *   The test suceeds when the `connected` event is fired, signaling
             *   the establishment of the connection.
@@ -39,7 +39,7 @@ describe("connection", () => {
             });
         });
 
-        it("a connection is not established on instantiation when `options.autoConnect === false`", done => {
+        it("a connection is not established on instantiation when `autoConnect === false`", done => {
             /*
             *   The test succeeds if, 1s after the creation of the DDP instance,
             *   a `connected` event has not been fired.
@@ -54,7 +54,69 @@ describe("connection", () => {
                 try {
                     expect(connectedHandler).to.have.callCount(0);
                     done();
-                    return;
+                } catch (e) {
+                    done(e);
+                }
+            }, 1000);
+        });
+
+        it("a connection can be established manually when `autoConnect === false`", done => {
+            /*
+            *   The test suceeds when the `connected` event is fired, signaling
+            *   the establishment of the connection.
+            *   If the event is never fired, the test times out and fails.
+            */
+            ddp = new DDP({
+                ...options,
+                autoConnect: false
+            });
+            ddp.connect();
+            ddp.on("connected", () => {
+                done();
+            });
+        });
+
+        it("manually connecting several times doesn't causes multiple simultaneous connections [CASE: `autoConnect === true`]", done => {
+            /*
+            *   The test suceeds if 1s after having called `connect` several
+            *   times only one connection has been established.
+            */
+            ddp = new DDP(options);
+            const connectedSpy = sinon.spy();
+            ddp.connect();
+            ddp.connect();
+            ddp.connect();
+            ddp.connect();
+            ddp.on("connected", connectedSpy);
+            setTimeout(() => {
+                try {
+                    expect(connectedSpy).to.have.callCount(1);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            }, 1000);
+        });
+
+        it("manually connecting several times doesn't causes multiple simultaneous connections [CASE: `autoConnect === false`]", done => {
+            /*
+            *   The test suceeds if 1s after having called `connect` several
+            *   times only one connection has been established.
+            */
+            ddp = new DDP({
+                ...options,
+                autoConnect: false
+            });
+            const connectedSpy = sinon.spy();
+            ddp.connect();
+            ddp.connect();
+            ddp.connect();
+            ddp.connect();
+            ddp.on("connected", connectedSpy);
+            setTimeout(() => {
+                try {
+                    expect(connectedSpy).to.have.callCount(1);
+                    done();
                 } catch (e) {
                     done(e);
                 }
@@ -65,7 +127,7 @@ describe("connection", () => {
 
     describe("disconnecting", () => {
 
-        it("the connection is closed when calling `ddp.disconnect`", done => {
+        it("the connection is closed when calling `disconnect`", done => {
             /*
             *   The test suceeds when the `disconnected` event is fired,
             *   signaling the termination of the connection.
@@ -80,7 +142,47 @@ describe("connection", () => {
             });
         });
 
-        it("the connection is closed when calling `ddp.disconnect` and it's not re-established", done => {
+        it("calling `disconnect` several times causes no issues", done => {
+            /*
+            *   The test suceeds if:
+            *   - calling `disconnect` several times doesn't throw, both before
+            *     and after the `disconnected` event has been received
+            *   - one and only one `disconnected` event is fired (check after
+            *     1s)
+            */
+            const ddp = new DDP(options);
+            const disconnectSpy = sinon.spy(() => {
+                try {
+                    ddp.disconnect();
+                    ddp.disconnect();
+                    ddp.disconnect();
+                    ddp.disconnect();
+                } catch (e) {
+                    done(e);
+                }
+            });
+            ddp.on("connected", () => {
+                try {
+                    ddp.disconnect();
+                    ddp.disconnect();
+                    ddp.disconnect();
+                    ddp.disconnect();
+                } catch (e) {
+                    done(e);
+                }
+            });
+            ddp.on("disconnected", disconnectSpy);
+            setTimeout(() => {
+                try {
+                    expect(disconnectSpy).to.have.callCount(1);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            }, 1000);
+        });
+
+        it("the connection is closed when calling `disconnect` and it's not re-established", done => {
             /*
             *   The test suceeds if, 1s after the `disconnected` event has been
             *   fired, there hasn't been any reconnection.
@@ -98,7 +200,6 @@ describe("connection", () => {
                     try {
                         expect(disconnectOnConnection).to.have.callCount(1);
                         done();
-                        return;
                     } catch (e) {
                         done(e);
                     }
@@ -106,7 +207,7 @@ describe("connection", () => {
             });
         });
 
-        it("the connection is closed and re-established when the server closes the connection, unless `options.autoReconnect === true`", done => {
+        it("the connection is closed and re-established when the server closes the connection, unless `autoReconnect === true`", done => {
             /*
             *   The test suceeds when the `connect` event is fired a second time
             *   after the client gets disconnected from the server (occurrence
@@ -130,7 +231,7 @@ describe("connection", () => {
             });
         });
 
-        it("the connection is closed and _not_ re-established when the server closes the connection and `options.autoReconnect === false`", done => {
+        it("the connection is closed and _not_ re-established when the server closes the connection and `autoReconnect === false`", done => {
             /*
             *   The test suceeds if, 1s after the `disconnected` event has been
             *   fired, there hasn't been any reconnection.
@@ -149,7 +250,6 @@ describe("connection", () => {
                     try {
                         expect(disconnectMe).to.have.callCount(1);
                         done();
-                        return;
                     } catch (e) {
                         done(e);
                     }
