@@ -1,4 +1,8 @@
-## 2.0.0 (February 12, 2016)
+## 2.0.1 (February 14, 2016)
+
+Fixed npm distribution (`lib/` was not published being in `.gitignore`).
+
+## 2.0.0 (February 14, 2016)
 
 Distribute as individual modules in `lib` instead of bundle in `dist`.
 

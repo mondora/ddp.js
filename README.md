@@ -8,6 +8,12 @@
 
 A javascript isomorphic/universal ddp client.
 
+> ## Warning
+> `ddp.js@^2.0.0` is only distributed as an `npm` module instead of an UMD
+> bundle. Also, `bower` has been removed as a method of distribution. If you
+> need an UMD bundle or `bower` support, I'm open for suggestions to add back
+> those methods of distribution without polluting this repo.
+
 ## What is it for?
 
 The purpose of this library is:
