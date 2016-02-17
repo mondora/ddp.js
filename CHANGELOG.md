@@ -4,14 +4,19 @@ Fixed npm distribution (`lib/` was not published being in `.gitignore`).
 
 ## 2.0.0 (February 14, 2016)
 
-Distribute as individual modules in `lib` instead of bundle in `dist`.
+### Breaking changes
 
-Added method to disconnect.
+* Distribute as individual modules in `lib` instead of bundle in `dist`. Should
+  not break node consumers. Could break browserify and webpack consumers.
+  Certainly breaks bower consumers (bower support has been removed)
 
-Added options to control auto-connect and auto-reconnect behaviour. As it turns
-out they could indeed be useful, for instance when one wants to simulate a
-connection scenario (e.g. in stress tests) and needs to have fine-grained
-control on the lifecycle of the connection.
+### New features
+
+* Added method to disconnect
+* Added options to control auto-connect and auto-reconnect behaviour. As it
+  turns out they could indeed be useful, for instance when one wants to simulate
+  a connection scenario (e.g. in stress tests) and needs to have fine-grained
+  control on the lifecycle of the connection.
 
 ## 1.1.0 (July 11, 2015)
 
