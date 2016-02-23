@@ -2,10 +2,6 @@ import EventEmitter from "wolfy87-eventemitter";
 
 export default class Socket extends EventEmitter {
 
-    emit () {
-        setTimeout(super.emit.bind(this, ...arguments), 0);
-    }
-
     constructor (SocketConstructor, endpoint) {
         super();
         this.SocketConstructor = SocketConstructor;
@@ -42,8 +38,8 @@ export default class Socket extends EventEmitter {
         */
         this.rawSocket.onopen = () => this.emit("open");
         this.rawSocket.onclose = () => {
-            this.emit("close");
             this.rawSocket = null;
+            this.emit("close");
         };
         /*
         *   Calls to `onerror` trigger the `close` event on the `Socket`
@@ -60,8 +56,8 @@ export default class Socket extends EventEmitter {
             delete this.rawSocket.onclose;
             // Safe to perform even if the socket is already closed
             this.rawSocket.close();
-            this.emit("close");
             this.rawSocket = null;
+            this.emit("close");
         };
         /*
         *   Calls to `onmessage` trigger a `message:in` event on the `Socket`

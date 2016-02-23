@@ -8,6 +8,7 @@ import Socket from "../../src/socket";
 
 class SocketConstructorMock {
     close () {}
+    send () {}
 }
 
 describe("`Socket` class", () => {
@@ -103,10 +104,11 @@ describe("`Socket` class", () => {
 
         it("emits an `open` event", () => {
             const socket = new Socket(SocketConstructorMock);
-            socket.emit = sinon.spy();
+            const handler = sinon.spy();
+            socket.on("open", handler);
             socket.open();
             socket.rawSocket.onopen();
-            expect(socket.emit).to.have.been.calledWith("open");
+            expect(handler).to.have.callCount(1);
         });
 
     });
@@ -115,10 +117,11 @@ describe("`Socket` class", () => {
 
         it("emits a `close` event", () => {
             const socket = new Socket(SocketConstructorMock);
-            socket.emit = sinon.spy();
+            const handler = sinon.spy();
+            socket.on("close", handler);
             socket.open();
             socket.rawSocket.onclose();
-            expect(socket.emit).to.have.been.calledWith("close");
+            expect(handler).to.have.callCount(1);
         });
 
         it("null-s the `rawSocket` property", () => {
@@ -152,10 +155,11 @@ describe("`Socket` class", () => {
 
         it("emits a `close` event", () => {
             const socket = new Socket(SocketConstructorMock);
-            socket.emit = sinon.spy();
+            const handler = sinon.spy();
+            socket.on("close", handler);
             socket.open();
             socket.rawSocket.onerror();
-            expect(socket.emit).to.have.been.calledWith("close");
+            expect(handler).to.have.callCount(1);
         });
 
         it("null-s the `rawSocket` property", () => {
@@ -188,10 +192,12 @@ describe("`Socket` class", () => {
 
         it("emits `message:in` events", () => {
             const socket = new Socket(SocketConstructorMock);
-            socket.emit = sinon.spy();
+            const handler = sinon.spy();
+            socket.on("message:in", handler);
             socket.open();
             socket.rawSocket.onmessage({data: JSON.stringify({a: "a"})});
-            expect(socket.emit).to.have.been.calledWith("message:in", {a: "a"});
+            expect(handler).to.have.callCount(1);
+            expect(handler).to.have.been.calledWith({a: "a"});
         });
 
     });

@@ -257,6 +257,56 @@ describe("connection", () => {
             });
         });
 
+        describe("ddp.js issue #22", () => {
+
+            /*
+            *   We need to test that no `uncaughtException`-s are raised. Since
+            *   mocha adds a listener to the `uncaughtException` event which
+            *   causes tests to fail in an unexpected manner, we first remove
+            *   that listener, and then we restore it. Since it's not clear
+            *   _what_ mocha does with that listener, we try to lower the
+            *   meddling impact by doing all of our work inside the `it` block.
+            */
+
+            it("no issues when sending messages while disconnected / while disconnecting", done => {
+                /*
+                *   The test suceeds if, 100ms after the `disconnected` event
+                *   has been fired, there haven't been any uncaught exceptions.
+                */
+                const catcher = sinon.spy();
+                const listeners = process.listeners("uncaughtException");
+                process.removeAllListeners("uncaughtException");
+                process.on("uncaughtException", catcher);
+                const ddp = new DDP({
+                    ...options,
+                    autoReconnect: false
+                });
+                ddp.on("connected", () => {
+                    ddp.disconnect();
+                });
+                const interval = setInterval(() => {
+                    ddp.method("echo", []);
+                }, 1);
+                ddp.on("disconnected", () => {
+                    setTimeout(runAssertions, 100);
+                });
+                const runAssertions = () => {
+                    clearInterval(interval);
+                    process.removeAllListeners("uncaughtException");
+                    listeners.forEach(listener => {
+                        process.on("uncaughtException", listener);
+                    });
+                    try {
+                        expect(catcher).to.have.callCount(0);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                };
+            });
+
+        });
+
     });
 
 });
