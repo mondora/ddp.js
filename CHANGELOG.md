@@ -1,3 +1,7 @@
+## 2.1.0 (February 23, 2016)
+
+Internal API change: made `Socket.emit` synchronous.
+
 ## 2.0.1 (February 14, 2016)
 
 Fixed npm distribution (`lib/` was not published being in `.gitignore`).
