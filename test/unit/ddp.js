@@ -118,6 +118,22 @@ describe("`DDP` class", () => {
             expect(id).to.be.a("string");
         });
 
+        it("generates unique id when not specified", () => {
+            const ddp = new DDP(options);
+            var ids = [];
+            ids.push(ddp.sub("echo", [ 0 ]));
+            ids.push(ddp.sub("echo", [ 0 ]));
+            expect(ids[0]).to.be.a("string");
+            expect(ids[1]).to.be.a("string");
+            expect(ids[0]).not.to.equal(ids[1]);
+        });
+
+        it("allows manually specifying sub's id", () => {
+            const ddp = new DDP(options);
+            const subId = ddp.sub("echo", [ 0 ], '12345');
+            expect(subId).to.equal('12345');
+        });
+
     });
 
     describe("`unsub` method", () => {
