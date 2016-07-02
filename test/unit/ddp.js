@@ -130,8 +130,8 @@ describe("`DDP` class", () => {
 
         it("allows manually specifying sub's id", () => {
             const ddp = new DDP(options);
-            const subId = ddp.sub("echo", [ 0 ], '12345');
-            expect(subId).to.equal('12345');
+            const subId = ddp.sub("echo", [ 0 ], "12345");
+            expect(subId).to.equal("12345");
         });
 
     });
