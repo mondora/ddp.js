@@ -1,3 +1,7 @@
+## 2.2.0 (July 2, 2016)
+
+PR #29: add possibility to specify a subscription id.
+
 ## 2.1.0 (February 23, 2016)
 
 Internal API change: made `Socket.emit` synchronous.
