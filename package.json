@@ -48,6 +48,6 @@
     "sinon-chai": "^2.8.0"
   },
   "dependencies": {
-    "wolfy87-eventemitter": "^4.3.0"
+    "wolfy87-eventemitter": "^5.1.0"
   }
 }
