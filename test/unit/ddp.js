@@ -293,7 +293,7 @@ describe("`DDP` class", () => {
                 id: "id",
                 msg: "failed",
                 version: "2"  //DDP Mock Server version
-            }
+            };
             ddp.socket.emit("message:in", message);
 
             expect(ddp.emit).to.have.been.calledWith("failed", message.version);
@@ -301,7 +301,7 @@ describe("`DDP` class", () => {
 
         it("close socket on `failed` DDP messages", () => {
             const ddp = new DDP(options);
-            ddp.socket.close = sinon.spy()
+            ddp.socket.close = sinon.spy();
             ddp.socket.emit("message:in", {
                 id: "id",
                 msg: "failed",
