@@ -286,6 +286,31 @@ describe("`DDP` class", () => {
             });
         });
 
+        it("handle `failed` DDP messages", () => {
+            const ddp = new DDP(options);
+            ddp.emit = sinon.spy();
+            const message = {
+                id: "id",
+                msg: "failed",
+                version: "2"  //DDP Mock Server version
+            }
+            ddp.socket.emit("message:in", message);
+
+            expect(ddp.emit).to.have.been.calledWith("failed", message.version);
+        });
+
+        it("close socket on `failed` DDP messages", () => {
+            const ddp = new DDP(options);
+            ddp.socket.close = sinon.spy()
+            ddp.socket.emit("message:in", {
+                id: "id",
+                msg: "failed",
+                version: "2"
+            });
+
+            expect(ddp.socket.close).to.have.callCount(1);
+        });
+
         it("triggers `messageQueue` processing upon connection", () => {
             const ddp = new DDP(options);
             ddp.emit = sinon.spy();

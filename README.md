@@ -40,6 +40,9 @@ const ddp = new DDP(options);
 ddp.on("connected", () => {
     console.log("Connected");
 });
+ddp.on("failed"), (version) => {
+   console.log("Connection failed: protocol version supported from " + version) 
+});
 
 const subId = ddp.sub("mySubscription");
 ddp.on("ready", message => {
@@ -99,6 +102,8 @@ Available options are:
   WebSocket constructor or the SockJS constructor provided by the SockJS
   library.  On the server you can use whichever library implements the
   websocket protocol (e.g.  faye-websocket).
+
+- `version` **string** *optional* [default: `"1"`]: the proposed protocol version
 
 - `autoConnect` **boolean** *optional* [default: `true`]: whether to establish
   the connection to the server upon instantiation. When `false`, one can

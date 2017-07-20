@@ -3,7 +3,7 @@ import Queue from "./queue";
 import Socket from "./socket";
 import {contains, uniqueId} from "./utils";
 
-const DDP_VERSION = "1";
+const DDP_VERSION_DEFAULT = "1";
 const PUBLIC_EVENTS = [
     // Subscription messages
     "ready", "nosub", "added", "changed", "removed",
@@ -30,6 +30,7 @@ export default class DDP extends EventEmitter {
         this.autoConnect = (options.autoConnect !== false);
         this.autoReconnect = (options.autoReconnect !== false);
         this.reconnectInterval = options.reconnectInterval || DEFAULT_RECONNECT_INTERVAL;
+        this.version = options.version || DDP_VERSION_DEFAULT
 
         this.messageQueue = new Queue(message => {
             if (this.status === "connected") {
@@ -47,8 +48,8 @@ export default class DDP extends EventEmitter {
             // to establish the DDP connection
             this.socket.send({
                 msg: "connect",
-                version: DDP_VERSION,
-                support: [DDP_VERSION]
+                version: this.version,
+                support: [this.version]
             });
         });
 
@@ -70,6 +71,11 @@ export default class DDP extends EventEmitter {
                 this.status = "connected";
                 this.messageQueue.process();
                 this.emit("connected");
+            } else if (message.msg === "failed") {
+                // Close the underlaying socket and emit a 'failed' message with the DDP version the server would rather speak
+                // (see https://github.com/meteor/meteor/blob/devel/packages/ddp/DDP.md#messages)
+                this.socket.close()
+                this.emit("failed", message.version)
             } else if (message.msg === "ping") {
                 // Reply with a `pong` message to prevent the server from
                 // closing the connection
