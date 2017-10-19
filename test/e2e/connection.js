@@ -29,7 +29,7 @@ describe("connection", () => {
 
         it("a connection is established on instantiation unless `autoConnect === false`", done => {
             /*
-            *   The test suceeds when the `connected` event is fired, signaling
+            *   The test succeeds when the `connected` event is fired, signaling
             *   the establishment of the connection.
             *   If the event is never fired, the test times out and fails.
             */
@@ -62,7 +62,7 @@ describe("connection", () => {
 
         it("a connection can be established manually when `autoConnect === false`", done => {
             /*
-            *   The test suceeds when the `connected` event is fired, signaling
+            *   The test succeeds when the `connected` event is fired, signaling
             *   the establishment of the connection.
             *   If the event is never fired, the test times out and fails.
             */
@@ -78,7 +78,7 @@ describe("connection", () => {
 
         it("manually connecting several times doesn't causes multiple simultaneous connections [CASE: `autoConnect === true`]", done => {
             /*
-            *   The test suceeds if 1s after having called `connect` several
+            *   The test succeeds if 1s after having called `connect` several
             *   times only one connection has been established.
             */
             ddp = new DDP(options);
@@ -100,7 +100,7 @@ describe("connection", () => {
 
         it("manually connecting several times doesn't causes multiple simultaneous connections [CASE: `autoConnect === false`]", done => {
             /*
-            *   The test suceeds if 1s after having called `connect` several
+            *   The test succeeds if 1s after having called `connect` several
             *   times only one connection has been established.
             */
             ddp = new DDP({
@@ -123,13 +123,71 @@ describe("connection", () => {
             }, 1000);
         });
 
+        it("changing the endpoint fires an endPointChanged event", done => {
+            /*
+            *   The test succeeds when the `endPointChanged` event is fired, signalling
+            *   the establishment of the connection on the new endpoint.
+            *   If the event is never fired, the test times out and fails.
+            */
+            ddp = new DDP({
+                ...options
+            }) ;
+            ddp.on("endPointChanged", done());
+            ddp.changeEndpoint("ws://localhost:3002/websocket");
+        });
+
+        it("connecting to a different endpoint calls the callback if it succeeds", done => {
+            /*  The test succeeds when, after having changed the endPoint, the method callback is called
+            *   If the callback is never called, the test times out and fails.
+            */
+            ddp = new DDP({
+                ...options
+            }) ;
+
+            ddp.changeEndpoint("ws://localhost:3002/websocket", ()=>{
+                done();
+            });
+
+        });
+
+        it("after having been connected to a different endpoint it is possible call the server method", done => {
+            /*  The test succeeds when after having been connected to the second server, a call of the method `serverID`
+            *   return the second server id (2)
+            *   If the callback is never called, the
+             *   times out and fails.
+            */
+            ddp = new DDP({
+                ...options
+            }) ;
+
+            var eventSpy = sinon.spy();
+            ddp.on("endPointChanged", eventSpy);
+
+            ddp.changeEndpoint("ws://localhost:3002/websocket", ()=>{
+                // expect(eventSpy).to.have.callCount(1);
+                const methodId2 = ddp.method("serverID");
+                ddp.on("result", message => {
+                    if (message.id !== methodId2 || message.error) {
+                        return;
+                    }
+                    try {
+                        expect(message.result).to.equal(2);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                });
+            });
+
+        });
+
     });
 
     describe("disconnecting", () => {
 
         it("the connection is closed when calling `disconnect`", done => {
             /*
-            *   The test suceeds when the `disconnected` event is fired,
+            *   The test succeeds when the `disconnected` event is fired,
             *   signaling the termination of the connection.
             *   If the event is never fired, the test times out and fails.
             */
@@ -144,7 +202,7 @@ describe("connection", () => {
 
         it("calling `disconnect` several times causes no issues", done => {
             /*
-            *   The test suceeds if:
+            *   The test succeeds if:
             *   - calling `disconnect` several times doesn't throw, both before
             *     and after the `disconnected` event has been received
             *   - one and only one `disconnected` event is fired (check after
@@ -184,7 +242,7 @@ describe("connection", () => {
 
         it("the connection is closed when calling `disconnect` and it's not re-established", done => {
             /*
-            *   The test suceeds if, 1s after the `disconnected` event has been
+            *   The test succeeds if, 1s after the `disconnected` event has been
             *   fired, there hasn't been any reconnection.
             */
             const ddp = new DDP({
@@ -209,7 +267,7 @@ describe("connection", () => {
 
         it("the connection is closed and re-established when the server closes the connection, unless `autoReconnect === true`", done => {
             /*
-            *   The test suceeds when the `connect` event is fired a second time
+            *   The test succeeds when the `connect` event is fired a second time
             *   after the client gets disconnected from the server (occurrence
             *   marked by the `disconnected` event).
             *   If the event is never fired a second time, the test times out
@@ -233,7 +291,7 @@ describe("connection", () => {
 
         it("the connection is closed and _not_ re-established when the server closes the connection and `autoReconnect === false`", done => {
             /*
-            *   The test suceeds if, 1s after the `disconnected` event has been
+            *   The test succeeds if, 1s after the `disconnected` event has been
             *   fired, there hasn't been any reconnection.
             */
             const ddp = new DDP({
@@ -270,7 +328,7 @@ describe("connection", () => {
 
             it("no issues when sending messages while disconnected / while disconnecting", done => {
                 /*
-                *   The test suceeds if, 100ms after the `disconnected` event
+                *   The test succeeds if, 100ms after the `disconnected` event
                 *   has been fired, there haven't been any uncaught exceptions.
                 */
                 const catcher = sinon.spy();

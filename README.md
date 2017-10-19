@@ -71,8 +71,9 @@ After cloning the repository, install `npm` dependencies with `npm install`.
 Run `npm test` to run unit tests, or `npm run dev` to have `mocha` re-run your
 tests when source or test files change.
 
-To run e2e tests, first [install meteor](https://www.meteor.com/install). Then,
-start the meteor server with `npm run start-meteor`. Finally, run
+To run e2e tests, first [install meteor](https://www.meteor.com/install). Then, initialize the test evironment with `init-test-servers`, this will also execute the e2e test suite and stop the server on the test end.
+
+Now you can start the two server used in the test with `npm run start-server1` and `npm run start-server2` and, finally, run
 `npm run e2e-test` to run the e2e test suite, or `npm run e2e-dev` to have
 `mocha` re-run the suite when source or test files change.
 
@@ -225,6 +226,22 @@ None
 
 None
 
+---
+
+### DDP.changeEndpoint((endpoint, \[callback\])
+Close the current connection and establish a connection with another DDP server. 
+
+#### Arguments
+
+- `endpoint` **string** *required* : the location of the websocket server.
+
+- `callback` **function** : A callback called when the method succeed
+
+#### Returns
+
+None
+
+
 ## Public events
 
 ### Connection events
@@ -233,6 +250,8 @@ None
   established.
 
 - `disconnected`: emitted with no arguments when the DDP connection drops.
+
+- `endPointChanged`: emitted with no arument when the endpoint is changed and the new connection is established 
 
 ### Subscription events
 

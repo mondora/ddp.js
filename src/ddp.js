@@ -30,7 +30,7 @@ export default class DDP extends EventEmitter {
         this.autoConnect = (options.autoConnect !== false);
         this.autoReconnect = (options.autoReconnect !== false);
         this.reconnectInterval = options.reconnectInterval || DEFAULT_RECONNECT_INTERVAL;
-
+        this.SocketConstructor = options.SocketConstructor;
         this.messageQueue = new Queue(message => {
             if (this.status === "connected") {
                 this.socket.send(message);
@@ -40,7 +40,14 @@ export default class DDP extends EventEmitter {
             }
         });
 
-        this.socket = new Socket(options.SocketConstructor, options.endpoint);
+        this.socketInit(options.SocketConstructor, options.endpoint);
+
+    }
+
+
+    socketInit (SocketConstructor, endpoint) {
+
+        this.socket = new Socket(SocketConstructor, endpoint);
 
         this.socket.on("open", () => {
             // When the socket opens, send the `connect` message
@@ -83,6 +90,23 @@ export default class DDP extends EventEmitter {
             this.connect();
         }
 
+    }
+
+    /**
+     * Change the endpoint and start a new connection to the new server
+     * @fires ddp#endPointChanged  emitted when the endpoint has been changed sucessfully
+     * @param {string} endPoint  The endpoint address
+     * @param {requestCallback} callback  A callback called when the method succeed
+     */
+    changeEndpoint (endPoint, callback) {
+        this.disconnect();
+        this.socketInit(this.SocketConstructor, endPoint);
+        this.once("connected", () => {
+            this.emit("endPointChanged");
+            if (callback) {
+                callback();
+            }
+        });
     }
 
     connect () {
