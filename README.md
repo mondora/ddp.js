@@ -73,7 +73,7 @@ tests when source or test files change.
 
 To run e2e tests, first [install meteor](https://www.meteor.com/install). Then, initialize the test environment with `init-test-servers`, this will also execute the e2e test suite and stop the serves on the test end.
 
-Now you can start the two server used in the test with `npm run start-server1` and `npm run start-server2` and, finally, run
+Now you can start the two servers used in the test with `npm run start-server1` and `npm run start-server2` and, finally, run
 `npm run e2e-test` to run the e2e test suite, or `npm run e2e-dev` to have
 `mocha` re-run the suite when the source or test files change.
 
