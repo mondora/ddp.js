@@ -20,7 +20,7 @@ curl -s -o "/dev/null" http://localhost:3000
 if [ $? -eq 0 ]; then
   echo -e "${RED}[!]\t The address http://localhost:3000 is busy, maybe another Meteor instance?${NC}"
   echo -e "${RED}[!]\t exit${NC}"
-  exit o
+  exit 0
 fi
 curl -s -o "/dev/null" http://localhost:3002
 if [ $? -eq 0 ]; then
