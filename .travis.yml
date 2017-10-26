@@ -9,6 +9,14 @@ node_js:
 # before_script:
   # - npm run start-meteor & sleep 30
 
+deploy:
+  provider: npm
+  email: npm-bot@mondora.com
+  api_key: $NPM_TOKEN
+  on:
+    tags: true
+  skip_cleanup: true
+
 script:
   - npm run lint
   - npm run coverage
