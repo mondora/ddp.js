@@ -1,3 +1,7 @@
+## 2.2.1 (October 26, 2017)
+
+PR #38: update dependencies
+
 ## 2.2.0 (July 2, 2016)
 
 PR #29: add possibility to specify a subscription id.
