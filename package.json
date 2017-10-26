@@ -10,7 +10,7 @@
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "dev": "npm test -- --watch",
     "lint": "eslint src test",
-    "prepublish": "npm run clean && npm run build",
+    "prepare": "npm run clean && npm run build",
     "test": "mocha --require babel-register --recursive test/unit",
     "start-meteor": "cd test/server/ && meteor",
     "e2e-test": "mocha --require babel-register --recursive test/e2e",
