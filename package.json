@@ -42,7 +42,6 @@
     "coveralls": "^3.0.0",
     "eslint": "^4.9.0",
     "faye-websocket": "^0.11.1",
-    "isparta": "^4.0.0",
     "mocha": "^4.0.1",
     "nyc": "^11.2.1",
     "sinon": "^4.0.2",
