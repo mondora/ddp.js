@@ -25,7 +25,13 @@ The purpose of this library is:
 
 ## Install
 
+To install ddp.js using `npm`:
+
     npm install ddp.js
+
+or using `yarn`:
+
+    yarn add ddp.js
 
 ## Example usage
 
