@@ -68,6 +68,7 @@ export default class DDP extends EventEmitter {
         this.socket.on("message:in", message => {
             if (message.msg === "connected") {
                 this.status = "connected";
+                this.sessionId = message.session;
                 this.messageQueue.process();
                 this.emit("connected");
             } else if (message.msg === "ping") {
