@@ -202,7 +202,7 @@ describe("`DDP` class", () => {
     describe("`socket` `open` handler", () => {
 
         beforeEach(() => {
-            sinon.stub(global, "setTimeout", fn => fn());
+            sinon.stub(global, "setTimeout").callsFake(fn => fn());
         });
         afterEach(() => {
             global.setTimeout.restore();
@@ -224,7 +224,7 @@ describe("`DDP` class", () => {
     describe("`socket` `close` handler", () => {
 
         beforeEach(() => {
-            sinon.stub(global, "setTimeout", fn => fn());
+            sinon.stub(global, "setTimeout").callsFake(fn => fn());
         });
         afterEach(() => {
             global.setTimeout.restore();
@@ -267,7 +267,7 @@ describe("`DDP` class", () => {
     describe("`socket` `message:in` handler", () => {
 
         beforeEach(() => {
-            sinon.stub(global, "setTimeout", fn => fn());
+            sinon.stub(global, "setTimeout").callsFake(fn => fn());
         });
         afterEach(() => {
             global.setTimeout.restore();
