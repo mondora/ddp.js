@@ -69,7 +69,7 @@ export default class DDP extends EventEmitter {
             if (message.msg === "connected") {
                 this.status = "connected";
                 this.messageQueue.process();
-                this.emit("connected");
+                this.emit("connected", message);
             } else if (message.msg === "ping") {
                 // Reply with a `pong` message to prevent the server from
                 // closing the connection
